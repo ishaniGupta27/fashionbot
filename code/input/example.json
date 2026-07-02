@@ -1,0 +1,23 @@
+{
+  "archetypes": {
+    "single_garment_models": "/Users/Himanshu/Documents/fashionbot/archetypes/final",
+    "garment_batch_models": "/Users/Himanshu/Documents/fashionbot/archetypes/model",
+    "video_model": "/Users/Himanshu/Documents/fashionbot/archetypes/video/model.jpg"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": "Describe the garment and styling requirements for virtual try-on."
+  },
+  "video": {
+    "enabled": false,
+    "model": "fal-ai/kling-video/v3/standard/image-to-video",
+    "prompt": "Describe the motion for the generated fashion video.",
+    "duration": "5",
+    "generate_audio": false
+  },
+  "reel": {
+    "use_audio": true,
+    "include_end_card": true,
+    "original_image_credit": "Photographer or source name"
+  }
+}

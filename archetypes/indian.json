@@ -1,0 +1,274 @@
+[
+  {
+    "matrix_id": "M-101",
+    "market_focus": "South Indian",
+    "height_range_cm": [152, 160],
+    "frame_size": "Small",
+    "shoulder_to_hip_ratio": "Low (<0.90)",
+    "waist_to_hip_ratio": "Low (0.68-0.72)",
+    "torso_type": "Short",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Lower Body Dominant",
+    "melanin_hex_range": ["#8C5D3A", "#4A2F1B"],
+    "dominant_feature_trait": "Petite frame, defined waist, curved hips, elegant proportions"
+  },
+  {
+    "matrix_id": "M-102",
+    "market_focus": "North Indian",
+    "height_range_cm": [165, 173],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "Balanced (0.95-1.00)",
+    "waist_to_hip_ratio": "Low (0.70-0.74)",
+    "torso_type": "Balanced",
+    "leg_proportion": "Long",
+    "flesh_distribution": "Balanced",
+    "melanin_hex_range": ["#EAD2B6", "#C69367"],
+    "dominant_feature_trait": "Tall stature, balanced curves, elongated silhouette"
+  },
+  {
+    "matrix_id": "M-103",
+    "market_focus": "Metro India",
+    "height_range_cm": [158, 168],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "High (>1.02)",
+    "waist_to_hip_ratio": "Medium (0.74-0.78)",
+    "torso_type": "Long",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Upper Body Dominant",
+    "melanin_hex_range": ["#EFC9AF", "#8C5D3A"],
+    "dominant_feature_trait": "Broad shoulders, toned arms, athletic build"
+  },
+  {
+    "matrix_id": "M-104",
+    "market_focus": "Pan India",
+    "height_range_cm": [155, 165],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "Medium (0.75-0.80)",
+    "torso_type": "Balanced",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Balanced",
+    "melanin_hex_range": ["#F0D3B7", "#A77245"],
+    "dominant_feature_trait": "Straight silhouette with subtle waist definition"
+  },
+  {
+    "matrix_id": "M-105",
+    "market_focus": "Punjab / Haryana",
+    "height_range_cm": [162, 172],
+    "frame_size": "Large",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "Low (0.68-0.72)",
+    "torso_type": "Long",
+    "leg_proportion": "Long",
+    "flesh_distribution": "Balanced",
+    "melanin_hex_range": ["#F6E0CD", "#C69367"],
+    "dominant_feature_trait": "Tall powerful frame, broad ribcage, prominent bust, strong curves"
+  },
+
+  {
+    "matrix_id": "M-106",
+    "market_focus": "Pan India",
+    "height_range_cm": [155, 165],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "Low (<0.88)",
+    "waist_to_hip_ratio": "Very Low (<0.68)",
+    "torso_type": "Balanced",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Strongly Lower Body Dominant",
+    "melanin_hex_range": ["#EFC9AF", "#8C5D3A"],
+    "dominant_feature_trait": "Classic pear shape, narrow shoulders, full hips and thighs"
+  },
+
+  {
+    "matrix_id": "M-107",
+    "market_focus": "Urban Fashion",
+    "height_range_cm": [168, 178],
+    "frame_size": "Small",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "Medium (0.74-0.78)",
+    "torso_type": "Long",
+    "leg_proportion": "Very Long",
+    "flesh_distribution": "Minimal",
+    "melanin_hex_range": ["#F7E5D4", "#8C5D3A"],
+    "dominant_feature_trait": "Runway model proportions, long limbs, narrow hips, lean silhouette"
+  },
+
+  {
+    "matrix_id": "M-108",
+    "market_focus": "Pan India",
+    "height_range_cm": [150, 160],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "High (0.80-0.85)",
+    "torso_type": "Short",
+    "leg_proportion": "Short",
+    "flesh_distribution": "Central",
+    "melanin_hex_range": ["#F0D3B7", "#5E391E"],
+    "dominant_feature_trait": "Petite apple shape, softer midsection, comparatively slimmer legs"
+  },
+
+  {
+    "matrix_id": "M-109",
+    "market_focus": "South Indian",
+    "height_range_cm": [155, 163],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "Low (<0.90)",
+    "waist_to_hip_ratio": "Very Low (<0.66)",
+    "torso_type": "Short",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Lower Body Dominant",
+    "melanin_hex_range": ["#8C5D3A", "#4A2F1B"],
+    "dominant_feature_trait": "Extreme hourglass, very defined waist, prominent bust and hips"
+  },
+
+  {
+    "matrix_id": "M-110",
+    "market_focus": "Himalayan North",
+    "height_range_cm": [148, 158],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "High (>1.05)",
+    "waist_to_hip_ratio": "Medium (0.76-0.80)",
+    "torso_type": "Short",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Muscular",
+    "melanin_hex_range": ["#EAD2B6", "#CBB093"],
+    "dominant_feature_trait": "Compact athletic build, broad shoulders, muscular legs and calves"
+  }
+
+
+  [
+  {
+    "matrix_id": "M-201",
+    "market_focus": "Eastern India (Bengal)",
+    "height_range_cm": [150, 158],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "High (0.80-0.85)",
+    "torso_type": "Short",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Central",
+    "melanin_hex_range": ["#D8B08C", "#A06A45"],
+    "age_range": [55, 70],
+    "dominant_feature_trait": "Soft midsection, fuller bust, rounded shoulders, gentle mature silhouette"
+  },
+
+  {
+    "matrix_id": "M-202",
+    "market_focus": "Eastern India (Odisha)",
+    "height_range_cm": [152, 160],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "Medium-High (0.78-0.84)",
+    "torso_type": "Balanced",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Lower Body Dominant",
+    "melanin_hex_range": ["#B8774A", "#6A4024"],
+    "age_range": [50, 68],
+    "dominant_feature_trait": "Fuller hips and thighs, sturdy frame, soft waist, mature proportions"
+  },
+
+  {
+    "matrix_id": "M-203",
+    "market_focus": "North-East India (Assam)",
+    "height_range_cm": [148, 158],
+    "frame_size": "Small-Medium",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "Medium (0.76-0.82)",
+    "torso_type": "Short",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Balanced",
+    "melanin_hex_range": ["#D9B08A", "#B58A63"],
+    "age_range": [50, 65],
+    "dominant_feature_trait": "Compact frame, softer waist, fuller cheeks, graceful aging"
+  },
+
+  {
+    "matrix_id": "M-204",
+    "market_focus": "North-East India (Meghalaya)",
+    "height_range_cm": [145, 155],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "Low",
+    "waist_to_hip_ratio": "Medium-High (0.78-0.84)",
+    "torso_type": "Short",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Lower Body Dominant",
+    "melanin_hex_range": ["#D7AF89", "#A67C52"],
+    "age_range": [55, 70],
+    "dominant_feature_trait": "Petite stature, fuller lower body, rounded mature silhouette"
+  },
+
+  {
+    "matrix_id": "M-205",
+    "market_focus": "South India (Tamil Nadu)",
+    "height_range_cm": [150, 160],
+    "frame_size": "Medium-Large",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "High (0.80-0.86)",
+    "torso_type": "Balanced",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Central",
+    "melanin_hex_range": ["#8C5D3A", "#4A2F1B"],
+    "age_range": [55, 75],
+    "dominant_feature_trait": "Broad ribcage, fuller bust, soft waist, strong lower body"
+  },
+
+  {
+    "matrix_id": "M-206",
+    "market_focus": "South India (Kerala)",
+    "height_range_cm": [152, 162],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "Medium-High (0.78-0.84)",
+    "torso_type": "Balanced",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Balanced",
+    "melanin_hex_range": ["#A66A44", "#5C3822"],
+    "age_range": [55, 72],
+    "dominant_feature_trait": "Soft curves, fuller arms, mature elegance, balanced proportions"
+  },
+
+  {
+    "matrix_id": "M-207",
+    "market_focus": "South India (Andhra / Telangana)",
+    "height_range_cm": [150, 160],
+    "frame_size": "Medium-Large",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "High (0.80-0.86)",
+    "torso_type": "Short",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Central and Lower Body",
+    "melanin_hex_range": ["#8C5D3A", "#4A2F1B"],
+    "age_range": [50, 70],
+    "dominant_feature_trait": "Fuller bust, soft waist, sturdy legs, mature family-photo silhouette"
+  },
+
+  {
+    "matrix_id": "M-208",
+    "market_focus": "Rajasthan",
+    "height_range_cm": [152, 162],
+    "frame_size": "Medium",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "Medium-High (0.78-0.84)",
+    "torso_type": "Long",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Balanced",
+    "melanin_hex_range": ["#D2A078", "#A86A42"],
+    "age_range": [55, 75],
+    "dominant_feature_trait": "Strong facial structure, fuller arms, broad frame, graceful aging"
+  },
+
+  {
+    "matrix_id": "M-209",
+    "market_focus": "Maharashtra",
+    "height_range_cm": [152, 162],
+    "frame_size": "Medium-Large",
+    "shoulder_to_hip_ratio": "Balanced",
+    "waist_to_hip_ratio": "High (0.80-0.86)",
+    "torso_type": "Balanced",
+    "leg_proportion": "Balanced",
+    "flesh_distribution": "Central",
+    "melanin_hex_range": ["#B77A4C", "#704223"],
+    "age_range": [55, 72],
+    "dominant_feature_trait": "Broad torso, fuller midsection, strong calves, mature proportions"
+  }
+]

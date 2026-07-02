@@ -1,0 +1,17 @@
+{
+  "archetypes": {
+    "single_garment_models": "/Users/Himanshu/Documents/fashionbot/archetypes/final"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": "indian bharatnatyam costume. virutal try on. keep drape of sarree exact same. try same jewellery too"
+  },
+  "video": {
+    "enabled": false
+  },
+  "reel": {
+    "use_audio": true,
+    "inc or enable link herelude_end_card": true,
+    "original_image_credit": "pexels/atelierbyvineeth"
+  }
+}

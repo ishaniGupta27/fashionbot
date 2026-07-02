@@ -1,0 +1,21 @@
+{
+  "archetypes": {
+    "video_model": "/Users/Himanshu/Documents/fashionbot/archetypes/celebs_archtype/002.jpg"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": "virtual tryon.Ice-blue one-shoulder draped saree gown, crystal bead scatter, ornate silver fringe-trimmed border, extended train pallu, matching opera gloves, oversized crystal earrings. "
+  },
+  "video": {
+    "enabled": true,
+    "model": "fal-ai/kling-video/v3/standard/image-to-video",
+    "prompt": "Elegant fashion reel motion. The model makes a subtle runway turn and gentle pose, showing the outfit silhouette. Smooth camera movement, premium editorial style, natural fabric movement.",
+    "duration": "3",
+    "generate_audio": false
+  },
+  "reel": {
+    "use_audio": true,
+    "include_end_card": true,
+    "original_image_credit": "bazaarindia"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "archetypes": {
+    "single_garment_models": "/Users/Himanshu/Documents/fashionbot/archetypes/final"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": "rugged look. keep dark charcoal leather jacket.similar necklace. high pony tail. white ribbed tank top. black/ dark charcoal leather leggings. add black leather boots ankle high."
+  },
+  "video": {
+    "enabled": false
+  },
+  "reel": {
+    "use_audio": true,
+    "include_end_card": true,
+    "original_image_credit": "rockstargames"
+  }
+}

@@ -1,0 +1,81 @@
+Generate a professional studio full-body fashion lookbook photograph.
+
+
+Interpret the archetype data and create a realistic person matching the specified body proportions, height range, frame characteristics, skin tone range, and dominant physical traits.
+
+CLOTHING:
+- Plain solid black sports bra
+- Plain solid black fitted athletic shorts
+
+POSE:
+- Front-facing
+- Arms slightly away from body
+- Feet shoulder-width apart
+- Barefoot
+- Neutral facial expression
+- Straight posture
+
+STUDIO:
+- Neutral grey seamless studio backdrop
+- Professional catalog lighting
+- 85mm lens
+- Fixed camera position
+- Centered composition
+
+FRAMING:
+- Vertical 9:16 composition
+- Full body visible
+- Subject occupies approximately 88% of frame height
+- Minimal empty space above head
+- Minimal empty space below feet
+- Entire body centered horizontally
+- Consistent scale suitable for comparison across body archetypes
+- Consistent camera distance
+- No camera tilt
+- No perspective distortion
+
+OUTPUT STYLE:
+- Ultra-realistic commercial fashion photography
+- Retail catalog quality
+- Suitable for virtual try-on dataset creation
+- Natural skin texture
+- Realistic anatomy
+- Consistent studio lighting
+- Consistent framing across all archetypes
+
+NEGATIVE PROMPTS:
+fashion editorial,
+magazine cover,
+runway photography,
+walking pose,
+hip tilt,
+contrapposto pose,
+crossed legs,
+dramatic pose,
+jewelry,
+accessories,
+watch,
+necklace,
+earrings,
+handbag,
+sunglasses,
+heavy makeup,
+beauty retouching,
+colored background,
+props,
+furniture,
+text,
+watermark,
+cropped body,
+cropped feet,
+cropped hands,
+wide-angle lens,
+fisheye distortion,
+extreme perspective distortion,
+oversized head,
+tiny body,
+excessive headroom,
+excessive floor space,
+partial body,
+side profile,
+three-quarter view   GIVE ME PICTURE WITH ABOVE INFO NOW!

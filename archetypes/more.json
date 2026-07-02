@@ -1,0 +1,248 @@
+        {
+            "matrix_id": "M-017",
+            "market_focus": "Global / Midsize standard",
+            "ffit_shape_class": "Soft Rectangle (Midsize)",
+            "kibbe_essence": "Soft Classic",
+            "height_range_cm":, # 5'5" - 5'7"
+            "waist_to_hip_ratio": "Medium (0.74 - 0.76)",
+            "melanin_hex_range": ["#EFC9AF", "#CE9B6D"],
+            "dominant_feature_trait": "US Size 8/10, even flesh distribution, slight waist curve, balanced upper and lower body proportions"
+        },
+        {
+            "matrix_id": "M-018",
+            "market_focus": "South Asian / Middle Eastern",
+            "ffit_shape_class": "Spoon / Lower-Heavy Midsize",
+            "kibbe_essence": "Theatrical Romantic",
+            "height_range_cm":, # 5'3" - 5'5"
+            "waist_to_hip_ratio": "Low-Medium (0.70 - 0.72)",
+            "melanin_hex_range": ["#BF8F63", "#9E6D43"],
+            "dominant_feature_trait": "US Size 10/12, flat stomach, weight concentrates entirely on outer thighs, hips, and buttocks"
+        },
+        {
+            "matrix_id": "M-019",
+            "market_focus": "Western / European",
+            "ffit_shape_class": "Inverted Triangle (Midsize Athletic)",
+            "kibbe_essence": "Flamboyant Natural",
+            "height_range_cm":, # 5'8" - 5'10"
+            "waist_to_hip_ratio": "Medium (0.73 - 0.75)",
+            "melanin_hex_range": ["#FFF0E5", "#D1A67B"],
+            "dominant_feature_trait": "US Size 8/10, broad muscular shoulders, wide ribcage, shallow hips, very toned legs"
+        },
+        {
+            "matrix_id": "M-020",
+            "market_focus": "Global Petite",
+            "ffit_shape_class": "Round / Petite Midsize",
+            "kibbe_essence": "Soft Gamine",
+            "height_range_cm":, # 4'11" - 5'2"
+            "waist_to_hip_ratio": "High (0.77 - 0.80)",
+            "melanin_hex_range": ["#F7E5D4", "#A1734A"],
+            "dominant_feature_trait": "US Size 10, short limbs, weight sits visibly as softness on the upper arms, bust, and lower belly"
+        },
+        {
+            "matrix_id": "M-021",
+            "market_focus": "Global / Multi-Cultural",
+            "ffit_shape_class": "Hourglass (Midsize Curve)",
+            "kibbe_essence": "Romantic",
+            "height_range_cm":, # 5'4" - 5'6"
+            "waist_to_hip_ratio": "Extremely Low (< 0.69)",
+            "melanin_hex_range": ["#CE9B6D", "#4A2F1B"],
+            "dominant_feature_trait": "US Size 12, highly defined narrow waist with prominent full bust and matching wide curved hips"
+        },
+        {
+            "matrix_id": "M-022",
+            "market_focus": "Global / Midsize Apple",
+            "ffit_shape_class": "Oval (Midsize Upper-Heavy)",
+            "kibbe_essence": "Flamboyant Gamine",
+            "height_range_cm":, # 5'4" - 5'6"
+            "waist_to_hip_ratio": "High (> 0.81)",
+            "melanin_hex_range": ["#E8C39E", "#7A502C"],
+            "dominant_feature_trait": "US Size 8/10, carries weight strictly in the torso and upper stomach, paired with incredibly slender legs"
+        }
+
+        {
+            "matrix_id": "M-011",
+            "market_focus": "Global / Multi-Cultural",
+            "ffit_shape_class": "Oval / Diamond (Apple Shape)",
+            "kibbe_essence": "Soft Flamboyant",
+            "height_range_cm":, # 5'4" - 5'6"
+            "waist_to_hip_ratio": "Extremely High (> 0.85)",
+            "melanin_hex_range": ["#EFC9AF", "#8C5D3A"], # Multi-cultural range
+            "dominant_feature_trait": "Weight concentrated in upper abdomen and midsection, slender legs and arms"
+        },
+        {
+            "matrix_id": "M-012",
+            "market_focus": "Global / Multi-Cultural",
+            "ffit_shape_class": "Spoon / Extreme Triangle (True Pear)",
+            "kibbe_essence": "Romantic Plus",
+            "height_range_cm":, # 5'3" - 5'5"
+            "waist_to_hip_ratio": "Extremely Low (< 0.68)",
+            "melanin_hex_range": ["#D6B58F", "#5E391E"], 
+            "dominant_feature_trait": "Narrow ribcage and bust, wide voluptuous hips, heavy upper thighs, full lower curves"
+        },
+        {
+            "matrix_id": "M-013",
+            "market_focus": "Western Focus",
+            "ffit_shape_class": "Inverted Triangle Plus",
+            "kibbe_essence": "Dramatic Natural Plus",
+            "height_range_cm":, # 5'8" - 5'11"
+            "waist_to_hip_ratio": "Low-Medium (0.70 - 0.73)",
+            "melanin_hex_range": ["#FFF0E5", "#A1734A"],
+            "dominant_feature_trait": "Very broad upper bone structure, large bust, thick upper arms, flat hips, straight legs"
+        },
+        {
+            "matrix_id": "M-014",
+            "market_focus": "Global Petite",
+            "ffit_shape_class": "Round / Petite Plus",
+            "kibbe_essence": "Soft Gamine Plus",
+            "height_range_cm":, # 4'11" - 5'2"
+            "waist_to_hip_ratio": "High (0.78 - 0.82)",
+            "melanin_hex_range": ["#F7E5D4", "#4A2F1B"],
+            "dominant_feature_trait": "Short limbs, very compact short torso, uniform full soft curves throughout frame"
+        },
+        {
+            "matrix_id": "M-015",
+            "market_focus": "Global Focus",
+            "ffit_shape_class": "Wide Column (Rectangular Plus)",
+            "kibbe_essence": "Natural Plus",
+            "height_range_cm":, # 5'6" - 5'8"
+            "waist_to_hip_ratio": "High (0.80 - 0.84)",
+            "melanin_hex_range": ["#CE9B6D", "#7A502C"],
+            "dominant_feature_trait": "Solid thick-boned frame, bust, waist, and hips are roughly equal wide measurements"
+        },
+        {
+            "matrix_id": "M-016",
+            "market_focus": "Global Focus",
+            "ffit_shape_class": "Soft Hourglass with B-Belly",
+            "kibbe_essence": "Classic Soft",
+            "height_range_cm":, # 5'5" - 5'7"
+            "waist_to_hip_ratio": "Medium-High (0.75 - 0.78)",
+            "melanin_hex_range": ["#E8C39E", "#9E6D43"],
+            "dominant_feature_trait": "Traditional hourglass frame from front, distinct prominent lower stomach apron in profile"
+        }
+
+ {
+            "matrix_id": "M-023",
+            "market_focus": "Southeast Asian (Philippines/Indonesia)",
+            "ffit_shape_class": "Spoon / Curved Petite",
+            "kibbe_essence": "Soft Gamine",
+            "height_range_cm":, # 4'11" - 5'1.5"
+            "waist_to_hip_ratio": "High waist-to-hip curve (0.72 - 0.74)",
+            "melanin_hex_range": ["#C69367", "#A77245"], # Rich Golden Bronze / Morena
+            "dominant_feature_trait": "Petite stature, short curved torso, soft rounded shoulders, warm golden skin tones"
+        },
+
+
+{
+            "matrix_id": "M-024",
+            "market_focus": "East Asian (Northern China/Mongolia)",
+            "ffit_shape_class": "Rectangle / Tall Column",
+            "kibbe_essence": "Dramatic",
+            "height_range_cm":, # 5'6" - 5'9"
+            "waist_to_hip_ratio": "Low waist definition (< 0.71)",
+            "melanin_hex_range": ["#F6E0CD", "#E8CBB2"], # Alabaster / Pale Ivory with Neutral Undertone
+            "dominant_feature_trait": "Elongated long limbs, tall athletic frame, straight athletic hips, sharp angular jawline"
+        },
+        {
+            "matrix_id": "M-025",
+            "market_focus": "Central Asian (Kazakhstan/Uzbekistan)",
+            "ffit_shape_class": "Hourglass / Balanced Frame",
+            "kibbe_essence": "Natural Classic",
+            "height_range_cm":, # 5'4" - 5'6"
+            "waist_to_hip_ratio": "Pronounced Hourglass (0.70 - 0.73)",
+            "melanin_hex_range": ["#EAD2B6", "#D4B795"], # Soft Olive / Warm Beige
+            "dominant_feature_trait": "Highly symmetrical facial structure, balanced bust-to-hip ratio, moderate bone structure"
+        },
+        {
+            "matrix_id": "M-026",
+            "market_focus": "Vietnamese / Thai (Mekong Delta Region)",
+            "ffit_shape_class": "Lean Rectangle / Delicate Frame",
+            "kibbe_essence": "Flamboyant Gamine",
+            "height_range_cm":, # 5'0.5" - 5'3"
+            "waist_to_hip_ratio": "Low-Medium (0.71 - 0.73)",
+            "melanin_hex_range": ["#EAD2B6", "#CBB093"], # Sallow/Yellow Warm Undertones
+            "dominant_feature_trait": "Highly delicate fine bone structure, narrow hips, flat stomach, narrow shoulders"
+        },
+        {
+            "matrix_id": "M-027",
+            "market_focus": "South Asian (Northeast India/Nepal/Bhutan)",
+            "ffit_shape_class": "Compact Soft Column",
+            "kibbe_essence": "Soft Classic Petite",
+            "height_range_cm":, # 5'0" - 5'2"
+            "waist_to_hip_ratio": "Medium (0.74 - 0.76)",
+            "melanin_hex_range": ["#D3A982", "#B0855D"], # Warm Almond / Subtly Olive Tan
+            "dominant_feature_trait": "Short soft limbs, petite frame with soft flesh distribution, distinct Himalayan/East-Asian facial features blend"
+        }
+
+
+
+        {
+            "matrix_id": "M-028",
+            "market_focus": "North Indian (Punjabi)",
+            "ffit_shape_class": "Tall Hourglass / Broad Frame",
+            "kibbe_essence": "Flamboyant Natural / Soft Dramatic",
+            "height_range_cm":, # ~5'6" - 5'9"
+            "waist_to_hip_ratio": "Medium-Low (0.71 - 0.73)",
+            "melanin_hex_range": ["#E8C39E", "#C29B72"], # Light Golden Tan / Wheatish
+            "dominant_feature_trait": "Tall statured, long heavy limbs, broad shoulders, striking bold facial features"
+        },
+        {
+            "matrix_id": "M-029",
+            "market_focus": "South Indian (Dravidian / Tamil / Telugu)",
+            "ffit_shape_class": "Spoon / Lower-Heavy Hourglass",
+            "kibbe_essence": "Romantic Plus",
+            "height_range_cm":, # ~5'1" - 5'4"
+            "waist_to_hip_ratio": "Extremely Low (< 0.69)",
+            "melanin_hex_range": ["#8C5D3A", "#4A2F1B"], # Rich Deep Lustrous Melanin
+            "dominant_feature_trait": "Highly defined narrow waist, wide prominent hips, voluptuous lower half, soft flesh distribution"
+        },
+
+        {
+            "matrix_id": "M-030",
+            "market_focus": "East Indian (Bengali)",
+            "ffit_shape_class": "Soft Oval / Round Column",
+            "kibbe_essence": "Soft Classic",
+            "height_range_cm":, # ~5'0" - 5'3"
+            "waist_to_hip_ratio": "High (0.76 - 0.79)",
+            "melanin_hex_range": ["#CE9B6D", "#9E6D43"], # Warm Olive / Rich Caramel
+            "dominant_feature_trait": "Compact petite torso, soft rounded shoulders, subtle curves, large expressive eyes"
+        },
+        {
+            "matrix_id": "M-031",
+            "market_focus": "West Indian (Rajasthani / Gujarati)",
+            "ffit_shape_class": "Rectangle / Petite Balanced",
+            "kibbe_essence": "Dramatic Classic Petite",
+            "height_range_cm":, # ~5'1" - 5'4"
+            "waist_to_hip_ratio": "Medium (0.73 - 0.75)",
+            "melanin_hex_range": ["#D1A67B", "#A1734A"], # Sun-baked Golden / Dusty Tan
+            "dominant_feature_trait": "Delicate lean bone structure, proportional bust-to-hip ratio, straight waist line"
+        },
+        {
+            "matrix_id": "M-032",
+            "market_focus": "Himalayan North (Garhwali / Kumaoni)",
+            "ffit_shape_class": "Compact Muscular Column",
+            "kibbe_essence": "Natural Gamine",
+            "height_range_cm":, # ~4'11" - 5'2"
+            "waist_to_hip_ratio": "High (> 0.78)",
+            "melanin_hex_range": ["#EAD2B6", "#CBB093"], # Pale Olive / Light Wheatish
+            "dominant_feature_trait": "Short stature, dense high-muscle mass build, strong calves/legs, high cheekbones"
+        },
+        {
+            "matrix_id": "M-033",
+            "market_focus": "Northwest Alpine (Kashmiri)",
+            "ffit_shape_class": "Elongated Lean Rectangle",
+            "kibbe_essence": "Pure Dramatic / Dramatic Gamine",
+            "height_range_cm":, # ~5'5" - 5'8"
+            "waist_to_hip_ratio": "Low (< 0.71)",
+            "melanin_hex_range": ["#FFF0E5", "#EFC9AF"], # Very Fair Rosy / Pale Alabaster
+            "dominant_feature_trait": "Tall slender frame, narrow skeletal structure, sharp angular jaw, light hazel/brown eyes"
+        }
+         {
+            "matrix_id": "M-034",
+            "market_focus": "South Indian (Tamil / Telugu)",
+            "ffit_shape_class": "Lean Spoon / Slender Definition",
+            "kibbe_essence": "Theatrical Romantic",
+            "height_range_cm":, # ~5'1" - 5'4"
+            "waist_to_hip_ratio": "Extremely Low (< 0.68)",
+            "melanin_hex_range": ["#8C5D3A", "#4A2F1B"], # Rich Deep Lustrous Melanin
+            "dominant_feature_trait": "Petite narrow ribcage, highly defined tiny waist, slender curved hips, elegant lean structure"
+        },
