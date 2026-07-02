@@ -1,0 +1,29 @@
+# Images
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.bmp
+*.tiff
+
+# Videos
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.wmv
+*.flv
+*.m4v
+
+# macOS
+.DS_Store
+
+# Python (if applicable)
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+env/
