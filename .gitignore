@@ -22,6 +22,8 @@
 # Python (if applicable)
 __pycache__/
 *.pyc
+.env
+code/.env
 
 # Virtual environments
 venv/

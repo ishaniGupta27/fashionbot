@@ -1,0 +1,17 @@
+{
+  "mode": "body_type_garments",
+  "archetypes": {
+    "body_type_model": "/Users/Himanshu/Documents/fashionbot/archetypes/body_types/58.jpg"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": "virtual try on. keep the same body type, pose, face, hair, and overall likeness from the model image. show each garment naturally fitted on the body. preserve realistic fabric, proportions, lighting, and full outfit detail."
+  },
+  "video": {
+    "enabled": false
+  },
+  "reel": {
+    "original_image_description": "Original body type reference",
+    "original_image_credit": "source/credit"
+  }
+}

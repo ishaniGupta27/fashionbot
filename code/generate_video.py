@@ -10,6 +10,8 @@ import os
 import fal_client
 import requests
 
+from env_config import load_dotenv_if_present
+
 
 DEFAULT_VIDEO_MODEL = "fal-ai/kling-video/v3/standard/image-to-video"
 
@@ -98,8 +100,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    load_dotenv_if_present()
+
     if "FAL_KEY" not in os.environ:
-        raise RuntimeError("FAL_KEY not found. Run: export FAL_KEY='your_key'")
+        raise RuntimeError(
+            "FAL_KEY not found. Run: export FAL_KEY='your_key' "
+            "or add FAL_KEY=your_key to code/.env"
+        )
 
     generate_video(
         args.source_image,

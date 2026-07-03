@@ -12,6 +12,7 @@ from pipeline_config import (
     BASE_DIR,
     DEFAULT_INTRO_VOICEOVER,
     DEFAULT_MASCOT_IMAGE,
+    MODE_4_BODY_TYPE_GARMENTS,
     MODE_2_BATCH_FOLDER,
     MODE_3_SINGLE_IMAGE_VIDEO,
     config_path_for_id,
@@ -100,6 +101,18 @@ def count_existing_vto_outputs(
 
         return existing
 
+    if mode == MODE_4_BODY_TYPE_GARMENTS:
+        for garment_file in garment_files:
+            output_path = os.path.join(
+                paths["vto_output_dir"],
+                os.path.splitext(garment_file)[0] + OUTPUT_EXTENSION
+            )
+
+            if output_exists(output_path):
+                existing += 1
+
+        return existing
+
     if mode == MODE_2_BATCH_FOLDER:
         for garment_file in garment_files:
             garment_name = os.path.splitext(garment_file)[0]
@@ -180,12 +193,6 @@ def validate(garment_id):
     log_kv("Folder garment candidate", paths["garments_folder"])
     log_kv("Folder exists", folder_exists)
 
-    if single_exists and folder_exists:
-        fail("Both single garment and garment folder exist. Remove one.")
-
-    if not single_exists and not folder_exists:
-        fail("No garment input found for this id.")
-
     try:
         mode = detect_mode(garment_id, config)
     except RuntimeError as e:
@@ -193,6 +200,7 @@ def validate(garment_id):
 
     features = mode_config(mode)
     folder_mode = mode == MODE_2_BATCH_FOLDER
+    body_type_mode = mode == MODE_4_BODY_TYPE_GARMENTS
 
     ok(f"Detected execution mode: {mode}")
     log_kv("Mode description", features["description"])
@@ -213,6 +221,11 @@ def validate(garment_id):
     if mode == MODE_3_SINGLE_IMAGE_VIDEO:
         require_path("video_model", video_model, expect_file=True)
         ok("Mode 3 skips single_garment_models")
+    elif body_type_mode:
+        body_type_model = archetypes.get(active_archetype_key)
+        require_path(active_archetype_key, body_type_model, expect_file=True)
+        active_model_files = [os.path.basename(body_type_model)]
+        ok("Body type model image configured")
     else:
         active_model_dir = archetypes.get(active_archetype_key)
 
@@ -239,11 +252,22 @@ def validate(garment_id):
     ok("VTO config looks good")
 
     log_section("REEL")
+    original_image_description = (
+        reel.get("original_image_description")
+        or config.get("original_image_description")
+    )
     original_image_credit = (
         reel.get("original_image_credit")
         or config.get("original_image_credit")
     )
+    log_kv("Original image description", original_image_description or "(none)")
     log_kv("Original image credit", original_image_credit or "(none)")
+
+    if (
+        original_image_description is not None
+        and not isinstance(original_image_description, str)
+    ):
+        fail("reel.original_image_description must be a string when provided")
 
     if original_image_credit is not None and not isinstance(original_image_credit, str):
         fail("reel.original_image_credit must be a string when provided")
@@ -308,7 +332,7 @@ def validate(garment_id):
 
     log_section("COST PREVIEW")
 
-    if folder_mode:
+    if folder_mode or body_type_mode:
         garment_files = get_image_files(paths["garments_folder"])
     else:
         garment_files = [os.path.basename(paths["single_garment"])]
@@ -316,6 +340,9 @@ def validate(garment_id):
     if mode == MODE_3_SINGLE_IMAGE_VIDEO:
         model_files = [os.path.basename(video_model)]
         total_vto_pairs = 1
+    elif body_type_mode:
+        model_files = active_model_files
+        total_vto_pairs = len(garment_files)
     else:
         model_files = active_model_files
         total_vto_pairs = len(garment_files) * len(model_files)

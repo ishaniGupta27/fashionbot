@@ -129,8 +129,36 @@ def label_from_name(name):
     return code.replace(":", "/").replace("_", "/")
 
 
-def render_labeled_image(path, label, tmp_dir, mascot_path=None, credit=None):
-    if not label and not mascot_path and not credit:
+def wrap_text(draw, text, font, max_width):
+    words = text.split()
+    lines = []
+    current_line = ""
+
+    for word in words:
+        candidate = word if not current_line else f"{current_line} {word}"
+        bbox = draw.textbbox((0, 0), candidate, font=font)
+
+        if bbox[2] - bbox[0] <= max_width or not current_line:
+            current_line = candidate
+        else:
+            lines.append(current_line)
+            current_line = word
+
+    if current_line:
+        lines.append(current_line)
+
+    return lines
+
+
+def render_labeled_image(
+    path,
+    label,
+    tmp_dir,
+    mascot_path=None,
+    description=None,
+    credit=None
+):
+    if not label and not mascot_path and not description and not credit:
         return path
 
     os.makedirs(tmp_dir, exist_ok=True)
@@ -186,36 +214,52 @@ def render_labeled_image(path, label, tmp_dir, mascot_path=None, credit=None):
         )
         overlay.alpha_composite(mascot, (x, y))
 
-    if credit:
-        credit_text = f"Image credit: {credit}"
+    if description or credit:
         font_size = max(20, img.width // 36)
-        font = get_font(font_size)
+        description_font = get_font(max(font_size + 3, img.width // 32))
+        credit_font = get_font(font_size)
         max_width = int(img.width * 0.46)
-        words = credit_text.split()
-        lines = []
-        current_line = ""
+        text_blocks = []
 
-        for word in words:
-            candidate = word if not current_line else f"{current_line} {word}"
-            bbox = draw.textbbox((0, 0), candidate, font=font)
+        if description:
+            text_blocks.append((
+                wrap_text(draw, description, description_font, max_width),
+                description_font,
+                (255, 255, 255, 245)
+            ))
 
-            if bbox[2] - bbox[0] <= max_width or not current_line:
-                current_line = candidate
-            else:
-                lines.append(current_line)
-                current_line = word
+        if credit:
+            text_blocks.append((
+                wrap_text(
+                    draw,
+                    f"Image credit: {credit}",
+                    credit_font,
+                    max_width
+                ),
+                credit_font,
+                (255, 255, 255, 230)
+            ))
 
-        if current_line:
-            lines.append(current_line)
-
-        line_boxes = [
-            draw.textbbox((0, 0), line, font=font)
-            for line in lines
-        ]
-        text_width = max((box[2] - box[0] for box in line_boxes), default=0)
-        line_height = max((box[3] - box[1] for box in line_boxes), default=font_size)
+        text_width = 0
+        text_height = 0
         line_gap = max(4, font_size // 5)
-        text_height = (line_height * len(lines)) + (line_gap * max(len(lines) - 1, 0))
+        block_gap = max(10, font_size // 2)
+
+        for block_index, (lines, font, _) in enumerate(text_blocks):
+            line_boxes = [
+                draw.textbbox((0, 0), line, font=font)
+                for line in lines
+            ]
+            line_width = max((box[2] - box[0] for box in line_boxes), default=0)
+            line_height = max((box[3] - box[1] for box in line_boxes), default=font_size)
+
+            text_width = max(text_width, line_width)
+            text_height += line_height * len(lines)
+            text_height += line_gap * max(len(lines) - 1, 0)
+
+            if block_index < len(text_blocks) - 1:
+                text_height += block_gap
+
         padding_x = max(18, font_size // 2)
         padding_y = max(12, font_size // 3)
         margin = max(22, img.width // 40)
@@ -234,14 +278,24 @@ def render_labeled_image(path, label, tmp_dir, mascot_path=None, credit=None):
         )
 
         text_y = y1 + padding_y
-        for line in lines:
-            draw.text(
-                (x1 + padding_x, text_y),
-                line,
-                font=font,
-                fill=(255, 255, 255, 230)
-            )
-            text_y += line_height + line_gap
+        for block_index, (lines, font, fill) in enumerate(text_blocks):
+            line_boxes = [
+                draw.textbbox((0, 0), line, font=font)
+                for line in lines
+            ]
+            line_height = max((box[3] - box[1] for box in line_boxes), default=font_size)
+
+            for line in lines:
+                draw.text(
+                    (x1 + padding_x, text_y),
+                    line,
+                    font=font,
+                    fill=fill
+                )
+                text_y += line_height + line_gap
+
+            if block_index < len(text_blocks) - 1:
+                text_y += block_gap - line_gap
 
     img = Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
     output_name = (
@@ -262,6 +316,7 @@ def make_clip(
     label=None,
     tmp_dir=None,
     mascot_path=None,
+    description=None,
     credit=None
 ):
     if path.lower().endswith(VIDEO_EXTENSIONS):
@@ -271,7 +326,14 @@ def make_clip(
         )
 
     if tmp_dir:
-        path = render_labeled_image(path, label, tmp_dir, mascot_path, credit)
+        path = render_labeled_image(
+            path,
+            label,
+            tmp_dir,
+            mascot_path,
+            description,
+            credit
+        )
 
     return (
         ImageClip(path)
@@ -287,6 +349,7 @@ def add_flat_result_clips(
     tmp_dir,
     intro_features=False,
     mascot_path=None,
+    original_image_description=None,
     original_image_credit=None
 ):
     clips.append(
@@ -296,6 +359,7 @@ def add_flat_result_clips(
             label_from_name(os.path.splitext(os.path.basename(dress_image))[0]),
             tmp_dir,
             mascot_path if intro_features else None,
+            original_image_description,
             original_image_credit
         )
     )
@@ -320,6 +384,7 @@ def add_grouped_garment_clips(
     garments_dir,
     results_dir,
     tmp_dir,
+    original_image_description=None,
     original_image_credit=None
 ):
     garment_files = get_image_files(garments_dir)
@@ -346,6 +411,7 @@ def add_grouped_garment_clips(
                 1.0,
                 garment_label,
                 tmp_dir,
+                description=original_image_description,
                 credit=original_image_credit
             )
         )
@@ -381,6 +447,7 @@ def build_reel(
     intro_voiceover=DEFAULT_INTRO_VOICEOVER,
     mascot_image=DEFAULT_MASCOT_IMAGE,
     music_file=DEFAULT_AUDIO,
+    original_image_description=None,
     original_image_credit=None
 ):
     """Assemble the final reel from the selected presentation mode."""
@@ -403,6 +470,7 @@ def build_reel(
                 label_from_name(os.path.splitext(os.path.basename(dress_image))[0]),
                 tmp_dir,
                 mascot_path,
+                original_image_description,
                 original_image_credit
             )
         )
@@ -431,6 +499,7 @@ def build_reel(
             garments_dir,
             results_dir,
             tmp_dir,
+            original_image_description,
             original_image_credit
         )
     else:
@@ -441,6 +510,7 @@ def build_reel(
             tmp_dir,
             intro_features=intro_features,
             mascot_path=mascot_path,
+            original_image_description=original_image_description,
             original_image_credit=original_image_credit
         )
 
@@ -606,6 +676,11 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--original-image-description",
+        default=None
+    )
+
+    parser.add_argument(
         "--original-image-credit",
         default=None
     )
@@ -622,5 +697,6 @@ if __name__ == "__main__":
         intro_features=args.intro_features,
         intro_voiceover=args.intro_voiceover,
         mascot_image=args.mascot_image,
+        original_image_description=args.original_image_description,
         original_image_credit=args.original_image_credit
     )

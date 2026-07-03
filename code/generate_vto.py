@@ -4,6 +4,7 @@ Supports the three VTO shapes used by the pipeline:
 - one garment to many model images
 - many garments to many model images
 - one garment to one model image, used as the video source still
+- many garments to one model image, used for body-type/avatar reels
 """
 
 import os
@@ -11,6 +12,8 @@ import argparse
 import requests
 import fal_client
 from PIL import Image
+
+from env_config import load_dotenv_if_present
 
 
 FASHN_MODEL_ID = "fal-ai/fashn/tryon/v1.5"
@@ -251,6 +254,68 @@ def generate_vto_pair(
     print("\nDone!")
 
 
+def generate_vto_for_model(
+    garments_dir,
+    model_image_path,
+    output_dir,
+    model="fash",
+    prompt=None
+):
+    os.makedirs(output_dir, exist_ok=True)
+    tmp_dir = os.path.join(output_dir, ".vto_uploads")
+
+    garment_files = get_image_files(garments_dir)
+
+    if not garment_files:
+        raise RuntimeError(f"No garment images found in {garments_dir}")
+
+    pending_jobs = []
+
+    for garment_file in garment_files:
+        garment_path = os.path.join(garments_dir, garment_file)
+        garment_name = os.path.splitext(garment_file)[0]
+        output_path = os.path.join(
+            output_dir,
+            garment_name + OUTPUT_EXTENSION
+        )
+
+        if output_exists(output_path):
+            log_skip(output_path)
+            continue
+
+        pending_jobs.append((garment_file, garment_path, output_path))
+
+    print("\nDetected mode: many garments to one model")
+    print(f"Garments found: {len(garment_files)}")
+    print("Models found: 1")
+    print(f"Model image: {model_image_path}")
+    print(f"Existing outputs skipped: {len(garment_files) - len(pending_jobs)}")
+    print(f"VTO calls to make: {len(pending_jobs)}")
+
+    confirm_vto_calls(len(pending_jobs))
+
+    for garment_file, garment_path, output_path in pending_jobs:
+        try:
+            print(f"\nProcessing {garment_file}")
+
+            run_tryon_pair(
+                garment_path,
+                model_image_path,
+                output_path,
+                tmp_dir,
+                model=model,
+                prompt=prompt
+            )
+
+            print(f"Saved: {output_path}")
+
+        except Exception as e:
+            print(f"FAILED: {garment_file}")
+            print(e)
+
+    print("\nDone!")
+
+
 def generate_vto_grid(garments_dir, models_dir, output_dir, model="fash", prompt=None):
     os.makedirs(output_dir, exist_ok=True)
     tmp_dir = os.path.join(output_dir, ".vto_uploads")
@@ -375,12 +440,23 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    load_dotenv_if_present()
+
     if "FAL_KEY" not in os.environ:
         raise RuntimeError(
-            "FAL_KEY not found. Run: export FAL_KEY='your_key'"
+            "FAL_KEY not found. Run: export FAL_KEY='your_key' "
+            "or add FAL_KEY=your_key to code/.env"
         )
 
-    if args.model_image:
+    if args.garments and args.model_image:
+        generate_vto_for_model(
+            args.garments,
+            args.model_image,
+            args.output,
+            model=args.model,
+            prompt=args.prompt
+        )
+    elif args.model_image:
         if not args.dress:
             raise RuntimeError("--dress is required with --model-image")
 

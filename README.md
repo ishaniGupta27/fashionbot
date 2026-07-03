@@ -20,7 +20,7 @@ code/input/{id}.json
 
 ## What It Does
 
-The pipeline can run three internal modes.
+The pipeline can run four internal modes.
 
 ### Mode 1: Single Garment Image
 
@@ -109,6 +109,40 @@ garments/{id}/videos/video_source__{video_model_name}.mp4
 reels/reel_{id}.mp4
 ```
 
+### Mode 4: Body Type With Multiple Garments
+
+Input:
+
+```text
+garments/og/{id}.jpg      original body/reference image for reel intro
+garments/og/{id}/         garment folder
+```
+
+Config:
+
+```json
+"mode": "body_type_garments",
+"archetypes": {
+  "body_type_model": "/path/to/avatar-or-model-image.jpg"
+}
+```
+
+Flow:
+
+```text
+normalize each garment
+generate each garment on one body/avatar model image
+build reel: original body/reference image, generated VTO images, end card
+```
+
+Output:
+
+```text
+garments/og/{id}/_normalized_garments/*.jpg
+garments/{id}/*.jpg
+reels/reel_{id}.mp4
+```
+
 ## Config File
 
 Create one JSON file per run:
@@ -124,6 +158,7 @@ Example:
   "archetypes": {
     "single_garment_models": "/Users/Himanshu/Documents/fashionbot/archetypes/final",
     "garment_batch_models": "/Users/Himanshu/Documents/fashionbot/archetypes/model",
+    "body_type_model": "/Users/Himanshu/Documents/fashionbot/archetypes/body_types/model.jpg",
     "video_model": "/Users/Himanshu/Documents/fashionbot/archetypes/video/model.jpg"
   },
   "vto": {
@@ -140,14 +175,16 @@ Example:
   "reel": {
     "use_audio": true,
     "include_end_card": true,
+    "original_image_description": "Original garment photo description",
     "original_image_credit": "Photographer or source name"
   }
 }
 ```
 
 `video` can be omitted entirely. Missing video config means video is disabled.
-`reel.original_image_credit` is optional. When present, it is rendered on the
-original garment image clip only.
+`reel.original_image_description` and `reel.original_image_credit` are optional.
+When present, they are rendered on the original garment image clip only, with
+the description above the credit.
 
 ## Folder Layout
 
@@ -213,6 +250,7 @@ Calls fal.ai VTO APIs. Supports:
 one garment -> many models
 many garments -> many models
 one garment -> one model
+many garments -> one model
 ```
 
 `generate_video.py`
@@ -248,6 +286,12 @@ Set your fal.ai key:
 
 ```bash
 export FAL_KEY="your_key"
+```
+
+Or save it locally in `code/.env`:
+
+```bash
+FAL_KEY=your_key
 ```
 
 ## Typical Workflow

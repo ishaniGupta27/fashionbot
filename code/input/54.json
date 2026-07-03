@@ -1,0 +1,17 @@
+{
+  "archetypes": {
+    "single_garment_models": "/Users/Himanshu/Documents/fashionbot/archetypes/final"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": "virtual try on.Cropped monochrome wrap jacket inspired by a warrior kimono, burgundy waist tie, black high-waisted sculpting leggings, fitted performance tank, yoga mat in hand, waterbottle in hand. chunky sneakers, sleek athleisure styling."
+  },
+  "video": {
+    "enabled": false
+  },
+  "reel": {
+    "use_audio": true,
+    "include_end_card": true,
+    "original_image_description": "Ashi: Samurai Jack love interest"
+  }
+}

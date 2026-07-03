@@ -13,6 +13,7 @@ import subprocess
 
 from pipeline_config import (
     BASE_DIR,
+    MODE_4_BODY_TYPE_GARMENTS,
     MODE_2_BATCH_FOLDER,
     MODE_3_SINGLE_IMAGE_VIDEO,
     detect_mode,
@@ -106,6 +107,10 @@ if __name__ == "__main__":
     vto = config["vto"]
     video = config.get("video", {})
     reel = config.get("reel", {})
+    original_image_description = (
+        reel.get("original_image_description")
+        or config.get("original_image_description")
+    )
     original_image_credit = (
         reel.get("original_image_credit")
         or config.get("original_image_credit")
@@ -116,6 +121,7 @@ if __name__ == "__main__":
     mode = detect_mode(garment_id, config)
     features = mode_config(mode)
     folder_mode = mode == MODE_2_BATCH_FOLDER
+    body_type_mode = mode == MODE_4_BODY_TYPE_GARMENTS
     video_enabled = mode == MODE_3_SINGLE_IMAGE_VIDEO
 
     log_section("CONFIG LOADED")
@@ -156,6 +162,21 @@ if __name__ == "__main__":
             garment_files[0]
         )
         reel_garments_dir = paths["normalized_garments_folder"]
+    elif body_type_mode:
+        garment_files = get_image_files(paths["garments_folder"])
+        body_type_model = archetypes[features["archetype_key"]]
+
+        print("Detected mode: MODE 4 - one body type to many garments")
+        log_kv("Original body image", paths["single_garment"])
+        log_kv("Input garment folder", paths["garments_folder"])
+        log_kv("Normalized garments folder", paths["normalized_garments_folder"])
+        log_kv("Body/avatar model image", body_type_model)
+        log_kv("Garments found", len(garment_files))
+        log_kv("Total VTO calls", len(garment_files))
+        log_kv("Garment files", ", ".join(garment_files))
+
+        reel_dress_image = paths["single_garment"]
+        reel_garments_dir = None
     elif video_enabled:
         video_model_path = archetypes["video_model"]
 
@@ -184,7 +205,7 @@ if __name__ == "__main__":
 
     log_section("STEP 1/4")
 
-    if folder_mode:
+    if folder_mode or body_type_mode:
         print("Normalize all garment images")
         log_kv("Normalize input folder", paths["garments_folder"])
         log_kv("Normalized garments folder", paths["normalized_garments_folder"])
@@ -229,6 +250,19 @@ if __name__ == "__main__":
             f"python3 generate_vto.py "
             f"--garments {quote(paths['normalized_garments_folder'])} "
             f"--models {quote(model_dir)} "
+            f"--output {quote(paths['vto_output_dir'])} "
+            f"--model {quote(vto_model)}"
+            + (f" --prompt {quote(vto_prompt)}" if vto_prompt else "")
+        )
+    elif body_type_mode:
+        log_kv("generate_vto input mode", "--garments --model-image")
+        log_kv("Garments dir", paths["normalized_garments_folder"])
+        log_kv("Body/avatar model image", body_type_model)
+
+        run(
+            f"python3 generate_vto.py "
+            f"--garments {quote(paths['normalized_garments_folder'])} "
+            f"--model-image {quote(body_type_model)} "
             f"--output {quote(paths['vto_output_dir'])} "
             f"--model {quote(vto_model)}"
             + (f" --prompt {quote(vto_prompt)}" if vto_prompt else "")
@@ -312,6 +346,7 @@ if __name__ == "__main__":
     log_kv("Reel featured image", reel_featured_image or "(none)")
     log_kv("Reel featured video", reel_featured_video or "(none)")
     log_kv("Reel intro features", features["intro_features"])
+    log_kv("Original image description", original_image_description or "(none)")
     log_kv("Original image credit", original_image_credit or "(none)")
     log_kv("Reel output", paths["reel_output"])
 
@@ -330,6 +365,11 @@ if __name__ == "__main__":
         + (
             f" --featured-video {quote(reel_featured_video)}"
             if reel_featured_video
+            else ""
+        )
+        + (
+            f" --original-image-description {quote(original_image_description)}"
+            if original_image_description
             else ""
         )
         + (

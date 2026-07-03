@@ -2,6 +2,7 @@
   "archetypes": {
     "single_garment_models": "/Users/Himanshu/Documents/fashionbot/archetypes/final",
     "garment_batch_models": "/Users/Himanshu/Documents/fashionbot/archetypes/model",
+    "body_type_model": "/Users/Himanshu/Documents/fashionbot/archetypes/body_types/model.jpg",
     "video_model": "/Users/Himanshu/Documents/fashionbot/archetypes/video/model.jpg"
   },
   "vto": {
@@ -18,6 +19,7 @@
   "reel": {
     "use_audio": true,
     "include_end_card": true,
+    "original_image_description": "Original garment photo description",
     "original_image_credit": "Photographer or source name"
   }
 }

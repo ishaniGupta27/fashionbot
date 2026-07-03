@@ -29,6 +29,7 @@ The config must include:
   "archetypes": {
     "single_garment_models": "...",
     "garment_batch_models": "...",
+    "body_type_model": "...",
     "video_model": "..."
   },
   "vto": {
@@ -42,6 +43,12 @@ Environment:
 
 ```bash
 export FAL_KEY="your_key"
+```
+
+Alternatively, create `code/.env`:
+
+```bash
+FAL_KEY=your_key
 ```
 
 Optional but commonly used:
@@ -296,6 +303,68 @@ garments/extras/mascot.jpeg
 
 If present, the voiceover plays during the intro image, the mascot is overlaid
 on that image, and background music starts after the intro image.
+
+## Mode 4: Body Type With Multiple Garments
+
+Detected when config includes:
+
+```json
+{
+  "mode": "body_type_garments"
+}
+```
+
+And both of these exist:
+
+```text
+garments/og/<id>.jpg
+garments/og/<id>/
+```
+
+The single image is the original body/reference image shown first in the reel.
+The folder contains garments to try on the selected body/avatar model.
+
+Config requirements:
+
+```json
+{
+  "mode": "body_type_garments",
+  "archetypes": {
+    "body_type_model": "/path/to/single/body/avatar/model.jpg"
+  },
+  "vto": {
+    "model": "fash or flux",
+    "prompt": "required for flux"
+  },
+  "video": {
+    "enabled": false
+  }
+}
+```
+
+Required files/folders:
+
+```text
+garments/og/<id>.jpg
+garments/og/<id>/
+archetypes.body_type_model
+```
+
+Generated files:
+
+```text
+garments/og/<id>/_normalized_garments/*.jpg
+garments/<id>/<garment_name>.jpg
+reels/reel_<id>.mp4
+```
+
+Reel order:
+
+```text
+original body/reference image: 1.8 sec
+generated VTO images
+end card, if present
+```
 
 ## Validation Behavior
 
