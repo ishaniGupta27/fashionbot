@@ -7,6 +7,7 @@
   },
   "vto": {
     "model": "flux",
+    "append_garment_name_to_prompt": false,
     "prompt": "Describe the garment and styling requirements for virtual try-on."
   },
   "video": {
@@ -19,6 +20,9 @@
   "reel": {
     "use_audio": true,
     "include_end_card": true,
+    "intro_duration": 1.8,
+    "result_duration": 1.0,
+    "end_card_duration": 1.0,
     "original_image_description": "Original garment photo description",
     "original_image_credit": "Photographer or source name"
   }

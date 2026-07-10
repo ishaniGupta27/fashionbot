@@ -1,7 +1,7 @@
 {
   "mode": "body_type_garments",
   "archetypes": {
-    "body_type_model": "/Users/Himanshu/Documents/fashionbot/archetypes/body_types/58.jpg"
+    "body_type_model": "/Users/Himanshu/Documents/fashionbot/archetypes/body_types/60.jpg"
   },
   "vto": {
     "model": "flux",
@@ -13,8 +13,6 @@
   "reel": {
     "intro_duration": 2.1,
     "result_duration": 1.5,
-    "end_card_duration": 1.5,
-    "original_image_description": "Original body type reference",
-    "original_image_credit": "source/credit"
+    "end_card_duration": 1.5
   }
 }

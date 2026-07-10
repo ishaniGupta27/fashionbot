@@ -1,0 +1,29 @@
+{
+  "mode": "body_type_garments",
+  "archetypes": {
+    "body_type_model": "/Users/Himanshu/Documents/fashionbot/archetypes/body_types/66.jpg"
+  },
+  "vto": {
+    "model": "flux",
+    "append_garment_name_to_prompt": true,
+    "prompt": [
+            "virtual try on different jeans outfits",
+            "keep the same body type, face, hair, and overall likeness from the model image.",
+            "do not change body proportions at all. that is most important",
+            "do not pick model from cloth image. ignore it. only single model",
+            "change the pose slightly to create natural movement.",
+            "keep expression soft smiling enganing eyes",
+            "keep jeans proportions apt to show there type. keep jeans color mid wash",
+            "standard black crop tank top. sleek heels and some gold hoop earrings."
+    ]
+  },
+  "video": {
+    "enabled": false
+  },
+  "reel": {
+    "intro_duration": 2.1,
+    "result_duration": 1.5,
+    "end_card_duration": 1.5,
+    "original_image_description": "Do you identify with this body shape?"
+  }
+}

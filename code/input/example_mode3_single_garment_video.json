@@ -1,0 +1,45 @@
+{
+  "_sample": {
+    "mode_name": "Mode 3: Single Garment With Video",
+    "how_mode_is_detected": "Use this when garments/og/<id>.jpg exists, garments/og/<id>/ does not exist, and video.enabled is true.",
+    "input_files": [
+      "garments/og/<id>.jpg",
+      "archetypes.video_model as one model/avatar image for the dedicated video source still"
+    ],
+    "flow": [
+      "Normalize the single garment image to garments/og/<id>.normalized.jpg.",
+      "Generate one dedicated VTO still using archetypes.video_model.",
+      "Generate one image-to-video asset from that VTO still.",
+      "Build a reel with original garment image, VTO still, generated video, and optional end card."
+    ],
+    "outputs": [
+      "garments/og/<id>.normalized.jpg",
+      "garments/<id>/video_source__<video_model_name>.jpg",
+      "garments/<id>/videos/video_source__<video_model_name>.mp4",
+      "reels/reel_<id>.mp4"
+    ],
+    "cost_note": "This mode makes one VTO call and one video-generation call unless outputs already exist."
+  },
+  "archetypes": {
+    "video_model": "/Users/Himanshu/Documents/fashionbot/archetypes/video/model.jpg"
+  },
+  "vto": {
+    "model": "flux",
+    "append_garment_name_to_prompt": false,
+    "prompt": "virtual try on. show the garment naturally fitted on the model. preserve realistic fabric, garment details, lighting, proportions, and full outfit visibility."
+  },
+  "video": {
+    "enabled": true,
+    "model": "fal-ai/kling-video/v3/standard/image-to-video",
+    "prompt": "Elegant fashion reel motion. The model makes a subtle runway turn and gentle pose, showing the outfit silhouette. Smooth camera movement, premium editorial style, natural fabric movement.",
+    "duration": "5",
+    "generate_audio": false
+  },
+  "reel": {
+    "intro_duration": 1.8,
+    "result_duration": 1.0,
+    "end_card_duration": 1.0,
+    "original_image_description": "Original garment reference",
+    "original_image_credit": "source/credit"
+  }
+}

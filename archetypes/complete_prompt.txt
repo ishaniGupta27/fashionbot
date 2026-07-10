@@ -3,6 +3,26 @@ Generate a professional studio full-body fashion lookbook photograph.
 
 Interpret the archetype data and create a realistic person matching the specified body proportions, height range, frame characteristics, skin tone range, and dominant physical traits.
 
+archetype:
+
+{
+  "matrix_id": "I-406",
+  "market_focus": "Affluent Indian Professional",
+  "ffit_shape_class": "Bust Heavy Curve",
+  "kibbe_essence": "Soft Classic",
+  "height_range_cm": [156,164],
+  "frame_size": "Medium",
+  "waist_to_hip_ratio": "0.80-0.84",
+  "hair_profile": "Long naturally dark hair, center part, salon-maintained but realistic",
+  "clothing_size_us": "14-16",
+  "bra_size_reference": "44DD-46DD",
+  "dominant_feature_trait": "Very full bust, soft upper torso, moderate hips, soft tummy, fuller upper arms, realistic Indian millennial proportions",
+  "age_range": [32,42],
+  "skin_tone_range": "Medium wheatish to warm brown South Asian skin tones",
+  "lifestyle_profile": "Financially comfortable urban professional, wedding guest, brunch, office and family-event fashion",
+  "visual_reference": "Relatable affluent Indian woman, naturally attractive, not fitness-model lean, not influencer-stylized"
+}
+
 CLOTHING:
 - Plain solid black sports bra
 - Plain solid black fitted athletic shorts
@@ -78,4 +98,4 @@ excessive headroom,
 excessive floor space,
 partial body,
 side profile,
-three-quarter view   GIVE ME PICTURE WITH ABOVE INFO NOW!
+three-quarter viewGIVE ME PICTURE WITH ABOVE INFO NOW!

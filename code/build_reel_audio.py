@@ -24,8 +24,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 VIDEO_WIDTH = 1080
 VIDEO_HEIGHT = 1920
-FEATURED_INTRO_DURATION = 1.8
-FEATURED_IMAGE_DURATION = 1.0
+DEFAULT_INTRO_DURATION = 1.8
+DEFAULT_RESULT_DURATION = 1.0
+DEFAULT_END_CARD_DURATION = 1.0
 FEATURED_VIDEO_SPEED = 0.75
 
 DEFAULT_AUDIO = (
@@ -43,6 +44,8 @@ EXTRA_IMAGE = (
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg")
 VIDEO_EXTENSIONS = (".mp4", ".mov", ".m4v")
 AUDIO_EXTENSIONS = (".mp3", ".wav", ".m4a", ".aac")
+TEXT_LAYOUT_DEFAULT = "default"
+TEXT_LAYOUT_BODY_TYPE = "body_type"
 
 
 def get_image_files(image_dir):
@@ -129,6 +132,22 @@ def label_from_name(name):
     return code.replace(":", "/").replace("_", "/")
 
 
+def display_name_from_filename(filename):
+    stem = os.path.splitext(filename)[0]
+    code_label = label_from_name(stem)
+
+    if code_label:
+        return code_label
+
+    return (
+        stem
+        .replace("__", " ")
+        .replace("_", " ")
+        .replace("-", " ")
+        .strip()
+    )
+
+
 def wrap_text(draw, text, font, max_width):
     words = text.split()
     lines = []
@@ -156,9 +175,17 @@ def render_labeled_image(
     tmp_dir,
     mascot_path=None,
     description=None,
-    credit=None
+    credit=None,
+    text_layout=TEXT_LAYOUT_DEFAULT,
+    side_label=None
 ):
-    if not label and not mascot_path and not description and not credit:
+    if (
+        not label
+        and not mascot_path
+        and not description
+        and not credit
+        and not side_label
+    ):
         return path
 
     os.makedirs(tmp_dir, exist_ok=True)
@@ -214,11 +241,55 @@ def render_labeled_image(
         )
         overlay.alpha_composite(mascot, (x, y))
 
+    if side_label:
+        font_size = max(22, img.width // 34)
+        font = get_font(font_size)
+        max_width = int(img.width * 0.32)
+        lines = wrap_text(draw, side_label, font, max_width)
+        line_boxes = [
+            draw.textbbox((0, 0), line, font=font)
+            for line in lines
+        ]
+        text_width = max((box[2] - box[0] for box in line_boxes), default=0)
+        line_height = max((box[3] - box[1] for box in line_boxes), default=font_size)
+        line_gap = max(4, font_size // 5)
+        text_height = (
+            line_height * len(lines)
+            + line_gap * max(len(lines) - 1, 0)
+        )
+        padding_x = max(16, font_size // 2)
+        padding_y = max(12, font_size // 3)
+        right_safe = max(120, int(img.width * 0.14))
+
+        box_width = text_width + (padding_x * 2)
+        box_height = text_height + (padding_y * 2)
+        x2 = img.width - right_safe
+        x1 = x2 - box_width
+        y1 = int((img.height * 0.75) - (box_height / 2))
+        y2 = y1 + box_height
+
+        draw.rounded_rectangle(
+            (x1, y1, x2, y2),
+            radius=max(8, font_size // 4),
+            fill=(0, 0, 0, 155)
+        )
+
+        text_y = y1 + padding_y
+        for line in lines:
+            draw.text(
+                (x1 + padding_x, text_y),
+                line,
+                font=font,
+                fill=(255, 255, 255, 240)
+            )
+            text_y += line_height + line_gap
+
     if description or credit:
         font_size = max(20, img.width // 36)
         description_font = get_font(max(font_size + 3, img.width // 32))
         credit_font = get_font(font_size)
-        max_width = int(img.width * 0.46)
+        body_type_layout = text_layout == TEXT_LAYOUT_BODY_TYPE
+        max_width = int(img.width * (0.78 if body_type_layout else 0.46))
         text_blocks = []
 
         if description:
@@ -264,11 +335,23 @@ def render_labeled_image(
         padding_y = max(12, font_size // 3)
         margin = max(22, img.width // 40)
 
-        box_width = text_width + (padding_x * 2)
+        box_width = (
+            img.width - (margin * 2)
+            if body_type_layout
+            else text_width + (padding_x * 2)
+        )
         box_height = text_height + (padding_y * 2)
-        x2 = img.width - margin
-        x1 = x2 - box_width
-        y1 = int((img.height * 0.75) - (box_height / 2))
+
+        if body_type_layout:
+            x1 = margin
+            x2 = img.width - margin
+            y1 = int((img.height * 0.75) - (box_height / 2))
+        else:
+            x2 = img.width - margin
+            x1 = x2 - box_width
+            y1 = int((img.height * 0.75) - (box_height / 2))
+            y2 = y1 + box_height
+
         y2 = y1 + box_height
 
         draw.rounded_rectangle(
@@ -286,8 +369,15 @@ def render_labeled_image(
             line_height = max((box[3] - box[1] for box in line_boxes), default=font_size)
 
             for line in lines:
+                line_box = draw.textbbox((0, 0), line, font=font)
+                line_width = line_box[2] - line_box[0]
+                text_x = (
+                    x1 + ((box_width - line_width) / 2)
+                    if body_type_layout
+                    else x1 + padding_x
+                )
                 draw.text(
-                    (x1 + padding_x, text_y),
+                    (text_x, text_y),
                     line,
                     font=font,
                     fill=fill
@@ -317,7 +407,9 @@ def make_clip(
     tmp_dir=None,
     mascot_path=None,
     description=None,
-    credit=None
+    credit=None,
+    text_layout=TEXT_LAYOUT_DEFAULT,
+    side_label=None
 ):
     if path.lower().endswith(VIDEO_EXTENSIONS):
         return (
@@ -332,7 +424,9 @@ def make_clip(
             tmp_dir,
             mascot_path,
             description,
-            credit
+            credit,
+            text_layout,
+            side_label
         )
 
     return (
@@ -350,17 +444,22 @@ def add_flat_result_clips(
     intro_features=False,
     mascot_path=None,
     original_image_description=None,
-    original_image_credit=None
+    original_image_credit=None,
+    original_image_text_layout=TEXT_LAYOUT_DEFAULT,
+    result_name_labels=False,
+    intro_duration=DEFAULT_INTRO_DURATION,
+    result_duration=DEFAULT_RESULT_DURATION
 ):
     clips.append(
         make_clip(
             dress_image,
-            FEATURED_INTRO_DURATION if intro_features else 1.8,
+            intro_duration,
             label_from_name(os.path.splitext(os.path.basename(dress_image))[0]),
             tmp_dir,
             mascot_path if intro_features else None,
             original_image_description,
-            original_image_credit
+            original_image_credit,
+            original_image_text_layout
         )
     )
 
@@ -368,13 +467,21 @@ def add_flat_result_clips(
     random.shuffle(media_files)
 
     for filename in media_files:
+        result_label = (
+            display_name_from_filename(filename)
+            if result_name_labels
+            else None
+        )
+
         clips.append(
             make_clip(
                 os.path.join(
                     results_dir,
                     filename
                 ),
-                1.0
+                result_duration,
+                tmp_dir=tmp_dir if result_label else None,
+                side_label=result_label
             )
         )
 
@@ -385,7 +492,8 @@ def add_grouped_garment_clips(
     results_dir,
     tmp_dir,
     original_image_description=None,
-    original_image_credit=None
+    original_image_credit=None,
+    result_duration=DEFAULT_RESULT_DURATION
 ):
     garment_files = get_image_files(garments_dir)
     result_files = get_media_files(results_dir)
@@ -408,7 +516,7 @@ def add_grouped_garment_clips(
         clips.append(
             make_clip(
                 garment_path,
-                1.0,
+                result_duration,
                 garment_label,
                 tmp_dir,
                 description=original_image_description,
@@ -429,7 +537,7 @@ def add_grouped_garment_clips(
             clips.append(
                 make_clip(
                     os.path.join(results_dir, result_file),
-                    1.0,
+                    result_duration,
                     garment_label,
                     tmp_dir
                 )
@@ -448,7 +556,12 @@ def build_reel(
     mascot_image=DEFAULT_MASCOT_IMAGE,
     music_file=DEFAULT_AUDIO,
     original_image_description=None,
-    original_image_credit=None
+    original_image_credit=None,
+    body_type_intro=False,
+    result_name_labels=False,
+    intro_duration=DEFAULT_INTRO_DURATION,
+    result_duration=DEFAULT_RESULT_DURATION,
+    end_card_duration=DEFAULT_END_CARD_DURATION
 ):
     """Assemble the final reel from the selected presentation mode."""
     clips = []
@@ -466,7 +579,7 @@ def build_reel(
         clips.append(
             make_clip(
                 dress_image,
-                FEATURED_INTRO_DURATION,
+                intro_duration,
                 label_from_name(os.path.splitext(os.path.basename(dress_image))[0]),
                 tmp_dir,
                 mascot_path,
@@ -480,7 +593,7 @@ def build_reel(
             clips.append(
                 make_clip(
                     featured_image,
-                    FEATURED_IMAGE_DURATION
+                    result_duration
                 )
             )
 
@@ -500,7 +613,8 @@ def build_reel(
             results_dir,
             tmp_dir,
             original_image_description,
-            original_image_credit
+            original_image_credit,
+            result_duration
         )
     else:
         add_flat_result_clips(
@@ -511,14 +625,22 @@ def build_reel(
             intro_features=intro_features,
             mascot_path=mascot_path,
             original_image_description=original_image_description,
-            original_image_credit=original_image_credit
+            original_image_credit=original_image_credit,
+            original_image_text_layout=(
+                TEXT_LAYOUT_BODY_TYPE
+                if body_type_intro
+                else TEXT_LAYOUT_DEFAULT
+            ),
+            result_name_labels=result_name_labels,
+            intro_duration=intro_duration,
+            result_duration=result_duration
         )
 
     if os.path.exists(EXTRA_IMAGE):
         clips.append(
             make_clip(
                 EXTRA_IMAGE,
-                1.0
+                end_card_duration
             )
         )
 
@@ -546,7 +668,7 @@ def build_reel(
         )
 
         audio_clips = []
-        music_start = FEATURED_INTRO_DURATION if audio_intro_mode else 0
+        music_start = intro_duration if audio_intro_mode else 0
 
         if audio_intro_mode and intro_voiceover_path:
             print(f"Voiceover intro: {intro_voiceover_path}")
@@ -557,7 +679,7 @@ def build_reel(
 
             voiceover_duration = min(
                 voiceover.duration,
-                FEATURED_INTRO_DURATION
+                intro_duration
             )
 
             audio_clips.append(
@@ -685,6 +807,36 @@ if __name__ == "__main__":
         default=None
     )
 
+    parser.add_argument(
+        "--body-type-intro",
+        action="store_true",
+        help="Use centered Mode 4 text treatment for the original image."
+    )
+
+    parser.add_argument(
+        "--result-name-labels",
+        action="store_true",
+        help="Overlay generated result filenames as garment labels."
+    )
+
+    parser.add_argument(
+        "--intro-duration",
+        type=float,
+        default=DEFAULT_INTRO_DURATION
+    )
+
+    parser.add_argument(
+        "--result-duration",
+        type=float,
+        default=DEFAULT_RESULT_DURATION
+    )
+
+    parser.add_argument(
+        "--end-card-duration",
+        type=float,
+        default=DEFAULT_END_CARD_DURATION
+    )
+
     args = parser.parse_args()
 
     build_reel(
@@ -698,5 +850,10 @@ if __name__ == "__main__":
         intro_voiceover=args.intro_voiceover,
         mascot_image=args.mascot_image,
         original_image_description=args.original_image_description,
-        original_image_credit=args.original_image_credit
+        original_image_credit=args.original_image_credit,
+        body_type_intro=args.body_type_intro,
+        result_name_labels=args.result_name_labels,
+        intro_duration=args.intro_duration,
+        result_duration=args.result_duration,
+        end_card_duration=args.end_card_duration
     )

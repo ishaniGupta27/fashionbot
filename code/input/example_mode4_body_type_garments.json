@@ -1,0 +1,47 @@
+{
+  "_sample": {
+    "mode_name": "Mode 4: Body Type With Multiple Garments",
+    "how_mode_is_detected": "Use this when mode is body_type_garments and both garments/og/<id>.jpg and garments/og/<id>/ exist.",
+    "input_files": [
+      "garments/og/<id>.jpg as the original body/reference image shown first in the reel",
+      "garments/og/<id>/ containing the garments to try on",
+      "archetypes.body_type_model as the similar avatar/body model used for all VTO calls"
+    ],
+    "flow": [
+      "Normalize the original body/reference image to garments/og/<id>.normalized.jpg.",
+      "Normalize every garment into garments/og/<id>/_normalized_garments/.",
+      "Try each normalized garment on the one body/avatar model image.",
+      "Build a reel with the normalized body/reference intro, generated VTO images, and optional end card."
+    ],
+    "outputs": [
+      "garments/og/<id>.normalized.jpg",
+      "garments/og/<id>/_normalized_garments/*.jpg",
+      "garments/<id>/<garment_name>.jpg",
+      "reels/reel_<id>.mp4"
+    ],
+    "reel_note": "Mode 4 uses a special centered intro banner placed around the 3/4 vertical point of the original body/reference image."
+  },
+  "_labels": {
+    "generated_result_labels": "Each generated VTO clip displays the garment filename as a safe right-side label around the 3/4 vertical point.",
+    "filename_tip": "Use readable garment filenames such as ivory_halter.jpg or red_saree.jpg because those names become reel labels."
+  },
+  "mode": "body_type_garments",
+  "archetypes": {
+    "body_type_model": "/Users/Himanshu/Documents/fashionbot/archetypes/body_types/<id>.jpg"
+  },
+  "vto": {
+    "model": "flux",
+    "append_garment_name_to_prompt": true,
+    "prompt": "virtual try on. keep the same body type, face, hair, and overall likeness from the model image. vary the pose slightly for each outfit to create natural movement, like a real editorial fitting sequence, with subtle shifts in stance, arms, shoulders, and body angle. avoid a stiff doll-like repeated pose. show each garment naturally fitted on the body. preserve realistic fabric, proportions, lighting, and full outfit detail."
+  },
+  "video": {
+    "enabled": false
+  },
+  "reel": {
+    "intro_duration": 2.1,
+    "result_duration": 1.5,
+    "end_card_duration": 1.5,
+    "original_image_description": "Original body type reference",
+    "original_image_credit": "source/credit"
+  }
+}

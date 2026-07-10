@@ -22,6 +22,7 @@ from pipeline_config import (
     input_paths,
     load_config,
     mode_config,
+    prompt_text,
 )
 
 
@@ -31,11 +32,20 @@ def run(cmd):
     print(cmd)
     print("=" * 80)
 
-    subprocess.run(
-        cmd,
-        shell=True,
-        check=True
-    )
+    try:
+        subprocess.run(
+            cmd,
+            shell=True,
+            check=True
+        )
+    except subprocess.CalledProcessError as e:
+        if "validate_input.py" in cmd:
+            print("\nERROR: Validation failed. Fix the issue above and rerun.")
+            raise SystemExit(e.returncode)
+
+        print(f"\nERROR: Command failed with exit code {e.returncode}")
+        print(cmd)
+        raise SystemExit(e.returncode)
 
 
 def quote(value):
@@ -50,6 +60,10 @@ def log_section(title):
 
 def log_kv(label, value):
     print(f"{label}: {value}")
+
+
+def reel_duration(reel, key, default):
+    return float(reel.get(key, default))
 
 
 def clear_image_files(image_dir):
@@ -82,6 +96,8 @@ def video_output_path(paths, video_model_path):
 
 
 if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -117,12 +133,33 @@ if __name__ == "__main__":
     )
 
     vto_model = vto.get("model", "fash")
-    vto_prompt = vto.get("prompt")
+    vto_prompt = prompt_text(vto.get("prompt"), "vto.prompt")
+    append_garment_name_to_prompt = bool(
+        vto.get("append_garment_name_to_prompt", False)
+    )
     mode = detect_mode(garment_id, config)
     features = mode_config(mode)
     folder_mode = mode == MODE_2_BATCH_FOLDER
     body_type_mode = mode == MODE_4_BODY_TYPE_GARMENTS
     video_enabled = mode == MODE_3_SINGLE_IMAGE_VIDEO
+    default_intro_duration = 2.1 if body_type_mode else 1.8
+    default_result_duration = 1.5 if body_type_mode else 1.0
+    default_end_card_duration = 1.5 if body_type_mode else 1.0
+    intro_duration = reel_duration(
+        reel,
+        "intro_duration",
+        default_intro_duration
+    )
+    result_duration = reel_duration(
+        reel,
+        "result_duration",
+        default_result_duration
+    )
+    end_card_duration = reel_duration(
+        reel,
+        "end_card_duration",
+        default_end_card_duration
+    )
 
     log_section("CONFIG LOADED")
     log_kv("Execution mode", mode)
@@ -136,6 +173,7 @@ if __name__ == "__main__":
     log_kv("Mascot", features["mascot"])
     log_kv("VTO model", vto_model)
     log_kv("VTO prompt present", bool(vto_prompt))
+    log_kv("Append garment name to prompt", append_garment_name_to_prompt)
     log_kv("Video enabled", video_enabled)
     log_kv("Single garment candidate", paths["single_garment"])
     log_kv("Folder garment candidate", paths["garments_folder"])
@@ -168,6 +206,7 @@ if __name__ == "__main__":
 
         print("Detected mode: MODE 4 - one body type to many garments")
         log_kv("Original body image", paths["single_garment"])
+        log_kv("Normalized body image", paths["normalized_single_garment"])
         log_kv("Input garment folder", paths["garments_folder"])
         log_kv("Normalized garments folder", paths["normalized_garments_folder"])
         log_kv("Body/avatar model image", body_type_model)
@@ -175,7 +214,7 @@ if __name__ == "__main__":
         log_kv("Total VTO calls", len(garment_files))
         log_kv("Garment files", ", ".join(garment_files))
 
-        reel_dress_image = paths["single_garment"]
+        reel_dress_image = paths["normalized_single_garment"]
         reel_garments_dir = None
     elif video_enabled:
         video_model_path = archetypes["video_model"]
@@ -206,6 +245,16 @@ if __name__ == "__main__":
     log_section("STEP 1/4")
 
     if folder_mode or body_type_mode:
+        if body_type_mode:
+            print("Normalize original body/reference image")
+            log_kv("Normalize input", paths["single_garment"])
+            log_kv("Expected normalized output", paths["normalized_single_garment"])
+
+            run(
+                f"python3 normalize.py "
+                f"--input {quote(paths['single_garment'])}"
+            )
+
         print("Normalize all garment images")
         log_kv("Normalize input folder", paths["garments_folder"])
         log_kv("Normalized garments folder", paths["normalized_garments_folder"])
@@ -253,6 +302,11 @@ if __name__ == "__main__":
             f"--output {quote(paths['vto_output_dir'])} "
             f"--model {quote(vto_model)}"
             + (f" --prompt {quote(vto_prompt)}" if vto_prompt else "")
+            + (
+                " --append-garment-name-to-prompt"
+                if append_garment_name_to_prompt
+                else ""
+            )
         )
     elif body_type_mode:
         log_kv("generate_vto input mode", "--garments --model-image")
@@ -266,6 +320,11 @@ if __name__ == "__main__":
             f"--output {quote(paths['vto_output_dir'])} "
             f"--model {quote(vto_model)}"
             + (f" --prompt {quote(vto_prompt)}" if vto_prompt else "")
+            + (
+                " --append-garment-name-to-prompt"
+                if append_garment_name_to_prompt
+                else ""
+            )
         )
     elif video_enabled:
         print("Video mode uses only the dedicated video_model VTO still.")
@@ -284,6 +343,11 @@ if __name__ == "__main__":
             f"--output {quote(paths['vto_output_dir'])} "
             f"--model {quote(vto_model)}"
             + (f" --prompt {quote(vto_prompt)}" if vto_prompt else "")
+            + (
+                " --append-garment-name-to-prompt"
+                if append_garment_name_to_prompt
+                else ""
+            )
         )
 
     reel_results_dir = paths["vto_output_dir"]
@@ -307,10 +371,15 @@ if __name__ == "__main__":
             f"--output {quote(video_source_image)} "
             f"--model {quote(vto_model)}"
             + (f" --prompt {quote(vto_prompt)}" if vto_prompt else "")
+            + (
+                " --append-garment-name-to-prompt"
+                if append_garment_name_to_prompt
+                else ""
+            )
         )
 
         video_model_id = get_video_model(config)
-        video_prompt = video["prompt"]
+        video_prompt = prompt_text(video["prompt"], "video.prompt")
 
         video_cmd = (
             f"python3 generate_video.py "
@@ -346,6 +415,11 @@ if __name__ == "__main__":
     log_kv("Reel featured image", reel_featured_image or "(none)")
     log_kv("Reel featured video", reel_featured_video or "(none)")
     log_kv("Reel intro features", features["intro_features"])
+    log_kv("Reel intro duration", f"{intro_duration:g} sec")
+    log_kv("Reel result duration", f"{result_duration:g} sec")
+    log_kv("Reel end card duration", f"{end_card_duration:g} sec")
+    log_kv("Body type intro layout", body_type_mode)
+    log_kv("Result name labels", body_type_mode)
     log_kv("Original image description", original_image_description or "(none)")
     log_kv("Original image credit", original_image_credit or "(none)")
     log_kv("Reel output", paths["reel_output"])
@@ -377,6 +451,11 @@ if __name__ == "__main__":
             if original_image_credit
             else ""
         )
+        + (" --body-type-intro" if body_type_mode else "")
+        + (" --result-name-labels" if body_type_mode else "")
+        + f" --intro-duration {quote(str(intro_duration))}"
+        + f" --result-duration {quote(str(result_duration))}"
+        + f" --end-card-duration {quote(str(end_card_duration))}"
     )
 
     print("\n🎉 DONE")

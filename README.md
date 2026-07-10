@@ -130,14 +130,22 @@ Config:
 Flow:
 
 ```text
+normalize original body/reference image
 normalize each garment
 generate each garment on one body/avatar model image
-build reel: original body/reference image, generated VTO images, end card
+build reel: normalized body/reference image, generated VTO images, end card
 ```
+
+Mode 4 uses a special intro text treatment: `reel.original_image_description`
+and `reel.original_image_credit` are horizontally centered in a wide banner
+placed around the 3/4 vertical point of the original body/reference image.
+Generated Mode 4 result clips also show the garment filename as a right-side
+label around the 3/4 vertical point, inset from the edge for Reels/Shorts UI.
 
 Output:
 
 ```text
+garments/og/{id}.normalized.jpg
 garments/og/{id}/_normalized_garments/*.jpg
 garments/{id}/*.jpg
 reels/reel_{id}.mp4
@@ -151,7 +159,21 @@ Create one JSON file per run:
 code/input/33.json
 ```
 
-Example:
+Each real run file is named by id, for example `code/input/63.json`.
+The repo also includes copyable sample configs:
+
+```text
+code/input/example_mode1_single_garment.json
+code/input/example_mode2_batch_garments.json
+code/input/example_mode3_single_garment_video.json
+code/input/example_mode4_body_type_garments.json
+```
+
+Those sample files include `_sample` notes. JSON does not support comments, so
+the `_sample` object is used as readable documentation and is ignored by the
+pipeline.
+
+Minimal shared shape:
 
 ```json
 {
@@ -163,6 +185,7 @@ Example:
   },
   "vto": {
     "model": "flux",
+    "append_garment_name_to_prompt": false,
     "prompt": "Describe the garment and styling requirements for virtual try-on."
   },
   "video": {
@@ -175,6 +198,9 @@ Example:
   "reel": {
     "use_audio": true,
     "include_end_card": true,
+    "intro_duration": 1.8,
+    "result_duration": 1.0,
+    "end_card_duration": 1.0,
     "original_image_description": "Original garment photo description",
     "original_image_credit": "Photographer or source name"
   }
@@ -182,9 +208,17 @@ Example:
 ```
 
 `video` can be omitted entirely. Missing video config means video is disabled.
+`vto.append_garment_name_to_prompt` is optional. When true, the generator adds
+the garment filename to each VTO prompt, for example
+`Garment name: wide leg jeans.` This is useful for batch and Mode 4 runs where
+filenames carry garment semantics.
+`reel.intro_duration`, `reel.result_duration`, and
+`reel.end_card_duration` are optional timing controls in seconds. Modes 1-3
+default to `1.8 / 1.0 / 1.0`; Mode 4 defaults to `2.1 / 1.5 / 1.5`.
 `reel.original_image_description` and `reel.original_image_credit` are optional.
 When present, they are rendered on the original garment image clip only, with
-the description above the credit.
+the description above the credit. Mode 4 uses the centered 3/4-height banner
+described above.
 
 ## Folder Layout
 
@@ -198,17 +232,23 @@ Audio/
 archetypes/
   final/                     common Mode 1 model set
   model/                     common Mode 2 model set
+  body_types/                suggested home for Mode 4 body/avatar images
   video/                     suggested home for video_model
 
 code/
   input/
     example.json
+    example_mode1_single_garment.json
+    example_mode2_batch_garments.json
+    example_mode3_single_garment_video.json
+    example_mode4_body_type_garments.json
     {id}.json
 
 garments/
   og/
     {id}.jpg                 Mode 1 or Mode 3 input
-    {id}/                    Mode 2 input folder
+    {id}.jpg + {id}/          Mode 4 body image + garment folder
+    {id}/                    Mode 2 or Mode 4 input folder
       code_2507:042:679.jpg
       _normalized_garments/
   {id}/                      generated VTO outputs
@@ -234,7 +274,7 @@ detected mode, paths, prompts, guardrails, and planned call counts.
 
 `pipeline_config.py`
 
-Shared paths, file helpers, and internal mode map. This is where the three
+Shared paths, file helpers, and internal mode map. This is where the four
 pipeline modes and their feature flags live.
 
 `normalize.py`
@@ -264,10 +304,10 @@ Builds the final vertical reel with audio. Supports image reels, grouped batch
 reels, and featured video reels. In featured video mode, it uses:
 
 ```text
-original image: 1.8s
-VTO still: 1.0s
+original image: 1.8s by default
+VTO still: 1.0s by default
 generated video: slowed to 0.75x
-end card: 1.0s
+end card: 1.0s by default
 ```
 
 If `Audio/voiceover_intro.*` exists, it plays during the first image and the

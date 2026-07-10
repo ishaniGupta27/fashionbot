@@ -1,8 +1,11 @@
 """Normalize garment images onto a 1080x1920 gray canvas for reel/VTO use."""
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 import argparse
 import os
+import shutil
+import subprocess
+import tempfile
 
 TARGET_W = 1080
 TARGET_H = 1920
@@ -10,8 +13,41 @@ TARGET_H = 1920
 FOOT_Y = 1750
 
 
+def open_image(input_path):
+    try:
+        return Image.open(input_path).convert("RGB")
+    except UnidentifiedImageError as original_error:
+        if not shutil.which("sips"):
+            raise original_error
+
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp_file:
+            converted_path = tmp_file.name
+
+        try:
+            subprocess.run(
+                [
+                    "sips",
+                    "-s",
+                    "format",
+                    "jpeg",
+                    input_path,
+                    "--out",
+                    converted_path
+                ],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            return Image.open(converted_path).convert("RGB")
+        except Exception:
+            raise original_error
+        finally:
+            if os.path.exists(converted_path):
+                os.remove(converted_path)
+
+
 def normalize_image(input_path, output_path=None):
-    img = Image.open(input_path).convert("RGB")
+    img = open_image(input_path)
 
     scale = TARGET_H / img.height * 0.92
 

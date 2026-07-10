@@ -98,6 +98,19 @@ def load_config(garment_id):
         return json.load(f)
 
 
+def prompt_text(value, label="prompt"):
+    if value is None:
+        return None
+
+    if isinstance(value, str):
+        return value
+
+    if isinstance(value, list) and all(isinstance(item, str) for item in value):
+        return " ".join(item.strip() for item in value if item.strip())
+
+    raise RuntimeError(f"{label} must be a string or a list of strings")
+
+
 def get_image_files(image_dir):
     return sorted([
         f for f in os.listdir(image_dir)

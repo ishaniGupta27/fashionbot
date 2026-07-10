@@ -1,0 +1,39 @@
+{
+  "_sample": {
+    "mode_name": "Mode 2: Batch Garment Folder",
+    "how_mode_is_detected": "Use this when garments/og/<id>/ exists and garments/og/<id>.jpg does not exist.",
+    "input_files": [
+      "garments/og/<id>/ containing garment images",
+      "archetypes.garment_batch_models folder with one or more model/avatar images"
+    ],
+    "flow": [
+      "Normalize every garment into garments/og/<id>/_normalized_garments/.",
+      "Try every normalized garment on every model image in archetypes.garment_batch_models.",
+      "Build a grouped catalog-style reel: garment, matching results, next garment, matching results."
+    ],
+    "outputs": [
+      "garments/og/<id>/_normalized_garments/*.jpg",
+      "garments/<id>/<garment_name>__<model_name>.jpg",
+      "reels/reel_<id>.mp4"
+    ],
+    "important_guardrail": "Video is intentionally disabled for Mode 2."
+  },
+  "archetypes": {
+    "garment_batch_models": "/Users/Himanshu/Documents/fashionbot/archetypes/model"
+  },
+  "vto": {
+    "model": "flux",
+    "append_garment_name_to_prompt": true,
+    "prompt": "virtual try on. show each garment naturally fitted on the model. preserve realistic fabric, garment details, lighting, proportions, and full outfit visibility."
+  },
+  "video": {
+    "enabled": false
+  },
+  "reel": {
+    "intro_duration": 1.8,
+    "result_duration": 1.0,
+    "end_card_duration": 1.0,
+    "original_image_description": "Batch garment reference",
+    "original_image_credit": "source/credit"
+  }
+}

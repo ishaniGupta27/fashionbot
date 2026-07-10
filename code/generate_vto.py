@@ -9,6 +9,7 @@ Supports the three VTO shapes used by the pipeline:
 
 import os
 import argparse
+import sys
 import requests
 import fal_client
 from PIL import Image
@@ -99,6 +100,66 @@ def log_skip(output_path):
     print(f"SKIP already exists: {output_path}")
 
 
+def display_name_from_path(path):
+    stem = os.path.splitext(os.path.basename(path))[0]
+
+    if stem.endswith(".normalized"):
+        stem = stem[:-len(".normalized")]
+
+    if stem.startswith("code_"):
+        stem = stem[len("code_"):]
+
+    return (
+        stem
+        .replace("__", " ")
+        .replace("_", " ")
+        .replace("-", " ")
+        .replace(":", "/")
+        .strip()
+    )
+
+
+def prompt_for_garment(prompt, garment_path, append_garment_name=False):
+    if not append_garment_name:
+        return prompt
+
+    garment_name = display_name_from_path(garment_path)
+
+    if not garment_name:
+        return prompt
+
+    base_prompt = prompt or DEFAULT_FLUX_PROMPT
+    return f"{base_prompt} Garment name: {garment_name}."
+
+
+def is_fal_auth_error(error):
+    status_code = getattr(error, "status_code", None)
+    response = getattr(error, "response", None)
+
+    if response is not None:
+        status_code = getattr(response, "status_code", status_code)
+
+    if status_code in (401, 403):
+        return True
+
+    message = str(error).lower()
+    return (
+        "403 forbidden" in message
+        or "401 unauthorized" in message
+        or "storage/auth/token" in message
+    )
+
+
+def fal_auth_error_message():
+    return (
+        "fal.ai authentication failed while uploading an image. "
+        "Your FAL_KEY is present, but fal.ai rejected it. "
+        "Export a valid key in this terminal with: export FAL_KEY='your_key' "
+        "or save it in code/.env as FAL_KEY=your_key. "
+        "Then rerun the pipeline."
+    )
+
+
 def build_tryon_arguments(model_url, garment_url, model, prompt):
     if model == "flux":
         return (
@@ -122,7 +183,8 @@ def run_tryon_pair(
     output_path,
     tmp_dir,
     model="fash",
-    prompt=None
+    prompt=None,
+    append_garment_name=False
 ):
     """Upload one garment/model pair, call the selected VTO API, save JPEG."""
     resized_garment_path = resize_for_vto(
@@ -143,7 +205,11 @@ def run_tryon_pair(
         model_url,
         garment_url,
         model,
-        prompt
+        prompt_for_garment(
+            prompt,
+            garment_path,
+            append_garment_name
+        )
     )
 
     result = fal_client.subscribe(
@@ -161,7 +227,14 @@ def run_tryon_pair(
         f.write(response.content)
 
 
-def generate_vto(dress_path, models_dir, output_dir, model="fash", prompt=None):
+def generate_vto(
+    dress_path,
+    models_dir,
+    output_dir,
+    model="fash",
+    prompt=None,
+    append_garment_name=False
+):
     os.makedirs(output_dir, exist_ok=True)
     tmp_dir = os.path.join(output_dir, ".vto_uploads")
 
@@ -201,12 +274,16 @@ def generate_vto(dress_path, models_dir, output_dir, model="fash", prompt=None):
                 output_path,
                 tmp_dir,
                 model=model,
-                prompt=prompt
+                prompt=prompt,
+                append_garment_name=append_garment_name
             )
 
             print(f"Saved: {output_path}")
 
         except Exception as e:
+            if is_fal_auth_error(e):
+                raise RuntimeError(fal_auth_error_message()) from e
+
             print(f"FAILED: {filename}")
             print(e)
 
@@ -218,7 +295,8 @@ def generate_vto_pair(
     model_image_path,
     output_path,
     model="fash",
-    prompt=None
+    prompt=None,
+    append_garment_name=False
 ):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     tmp_dir = os.path.join(os.path.dirname(output_path), ".vto_uploads")
@@ -247,7 +325,8 @@ def generate_vto_pair(
         output_path,
         tmp_dir,
         model=model,
-        prompt=prompt
+        prompt=prompt,
+        append_garment_name=append_garment_name
     )
 
     print(f"Saved: {output_path}")
@@ -259,7 +338,8 @@ def generate_vto_for_model(
     model_image_path,
     output_dir,
     model="fash",
-    prompt=None
+    prompt=None,
+    append_garment_name=False
 ):
     os.makedirs(output_dir, exist_ok=True)
     tmp_dir = os.path.join(output_dir, ".vto_uploads")
@@ -304,19 +384,30 @@ def generate_vto_for_model(
                 output_path,
                 tmp_dir,
                 model=model,
-                prompt=prompt
+                prompt=prompt,
+                append_garment_name=append_garment_name
             )
 
             print(f"Saved: {output_path}")
 
         except Exception as e:
+            if is_fal_auth_error(e):
+                raise RuntimeError(fal_auth_error_message()) from e
+
             print(f"FAILED: {garment_file}")
             print(e)
 
     print("\nDone!")
 
 
-def generate_vto_grid(garments_dir, models_dir, output_dir, model="fash", prompt=None):
+def generate_vto_grid(
+    garments_dir,
+    models_dir,
+    output_dir,
+    model="fash",
+    prompt=None,
+    append_garment_name=False
+):
     os.makedirs(output_dir, exist_ok=True)
     tmp_dir = os.path.join(output_dir, ".vto_uploads")
 
@@ -380,12 +471,16 @@ def generate_vto_grid(garments_dir, models_dir, output_dir, model="fash", prompt
                 output_path,
                 tmp_dir,
                 model=model,
-                prompt=prompt
+                prompt=prompt,
+                append_garment_name=append_garment_name
             )
 
             print(f"Saved: {output_path}")
 
         except Exception as e:
+            if is_fal_auth_error(e):
+                raise RuntimeError(fal_auth_error_message()) from e
+
             print(f"FAILED: {garment_file} on {model_file}")
             print(e)
 
@@ -438,56 +533,70 @@ if __name__ == "__main__":
         help="Prompt to use with --model flux"
     )
 
+    parser.add_argument(
+        "--append-garment-name-to-prompt",
+        action="store_true",
+        help="Append the garment filename as a natural-language prompt hint."
+    )
+
     args = parser.parse_args()
 
     load_dotenv_if_present()
 
-    if "FAL_KEY" not in os.environ:
-        raise RuntimeError(
-            "FAL_KEY not found. Run: export FAL_KEY='your_key' "
-            "or add FAL_KEY=your_key to code/.env"
-        )
+    try:
+        if "FAL_KEY" not in os.environ:
+            raise RuntimeError(
+                "FAL_KEY not found. Run: export FAL_KEY='your_key' "
+                "or add FAL_KEY=your_key to code/.env"
+            )
 
-    if args.garments and args.model_image:
-        generate_vto_for_model(
-            args.garments,
-            args.model_image,
-            args.output,
-            model=args.model,
-            prompt=args.prompt
-        )
-    elif args.model_image:
-        if not args.dress:
-            raise RuntimeError("--dress is required with --model-image")
+        if args.garments and args.model_image:
+            generate_vto_for_model(
+                args.garments,
+                args.model_image,
+                args.output,
+                model=args.model,
+                prompt=args.prompt,
+                append_garment_name=args.append_garment_name_to_prompt
+            )
+        elif args.model_image:
+            if not args.dress:
+                raise RuntimeError("--dress is required with --model-image")
 
-        generate_vto_pair(
-            args.dress,
-            args.model_image,
-            args.output,
-            model=args.model,
-            prompt=args.prompt
-        )
-    elif args.garments:
-        if not args.models:
-            raise RuntimeError("--models is required with --garments")
+            generate_vto_pair(
+                args.dress,
+                args.model_image,
+                args.output,
+                model=args.model,
+                prompt=args.prompt,
+                append_garment_name=args.append_garment_name_to_prompt
+            )
+        elif args.garments:
+            if not args.models:
+                raise RuntimeError("--models is required with --garments")
 
-        generate_vto_grid(
-            args.garments,
-            args.models,
-            args.output,
-            model=args.model,
-            prompt=args.prompt
-        )
-    elif args.dress:
-        if not args.models:
-            raise RuntimeError("--models is required with --dress")
+            generate_vto_grid(
+                args.garments,
+                args.models,
+                args.output,
+                model=args.model,
+                prompt=args.prompt,
+                append_garment_name=args.append_garment_name_to_prompt
+            )
+        elif args.dress:
+            if not args.models:
+                raise RuntimeError("--models is required with --dress")
 
-        generate_vto(
-            args.dress,
-            args.models,
-            args.output,
-            model=args.model,
-            prompt=args.prompt
-        )
-    else:
-        raise RuntimeError("Provide either --dress or --garments")
+            generate_vto(
+                args.dress,
+                args.models,
+                args.output,
+                model=args.model,
+                prompt=args.prompt,
+                append_garment_name=args.append_garment_name_to_prompt
+            )
+        else:
+            raise RuntimeError("Provide either --dress or --garments")
+    except RuntimeError as e:
+        print(f"\nERROR: {e}", file=sys.stderr)
+        raise SystemExit(1)

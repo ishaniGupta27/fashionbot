@@ -1,0 +1,29 @@
+{
+  "mode": "body_type_garments",
+  "archetypes": {
+    "body_type_model": "/Users/Himanshu/Documents/fashionbot/archetypes/body_types/65.jpg"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": [
+            "virtual try on office look outfits",
+            "keep the same body type, face, hair, and overall likeness from the model image.",
+            "do not change body proportions at all. that is most important",
+            "do not pick model from cloth image. ignore it. only single model",
+            "change the pose slightly to create natural movement of walking or twirling or dancing or chilling.",
+            "keep expression soft smiling enganing eyes",
+            "show each outfit naturally fitted on the body",
+            "sleek heels and some subtle jewellery",
+            "add office tote in hand. only one bag"
+    ]
+  },
+  "video": {
+    "enabled": false
+  },
+  "reel": {
+    "intro_duration": 2.1,
+    "result_duration": 1.5,
+    "end_card_duration": 1.5,
+    "original_image_description": "Do you identify with this body shape?"
+  }
+}

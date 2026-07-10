@@ -1,0 +1,29 @@
+{
+  "mode": "body_type_garments",
+  "archetypes": {
+    "body_type_model": "/Users/Himanshu/Documents/fashionbot/archetypes/body_types/67.jpg"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": [
+            "virtual try on different airport outfits",
+            "keep the same body type, face, hair, and overall likeness from the model image.",
+            "do not change body proportions at all. that is most important",
+            "do not pick model from cloth image. ignore it. only single model",
+            "change the pose slightly to create natural movement. background stays simple grey Neutral",
+            "keep expression soft smiling engaging eyes",
+            "keep clothes as close to possible. similar colors.",
+            "comfy white sneakers and some gold hoop earrings. big airport tote"
+    ],
+    "append_garment_name_to_prompt": true
+  },
+  "video": {
+    "enabled": false
+  },
+  "reel": {
+    "intro_duration": 1.8,
+    "result_duration": 1.5,
+    "end_card_duration": 1.5,
+    "original_image_description": "Do you identify with this body shape?"
+  }
+}

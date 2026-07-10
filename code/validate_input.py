@@ -23,6 +23,7 @@ from pipeline_config import (
     is_video_enabled,
     load_config,
     mode_config,
+    prompt_text,
     resolve_audio_file,
     resolve_image_file,
 )
@@ -49,6 +50,23 @@ def ok(message):
 
 def fail(message):
     raise RuntimeError(message)
+
+
+def validate_reel_duration(reel, key, default):
+    value = reel.get(key, default)
+
+    if isinstance(value, bool):
+        fail(f"reel.{key} must be a positive number when provided")
+
+    try:
+        duration = float(value)
+    except (TypeError, ValueError):
+        fail(f"reel.{key} must be a positive number when provided")
+
+    if duration <= 0:
+        fail(f"reel.{key} must be greater than 0")
+
+    return duration
 
 
 def require_section(config, section):
@@ -239,12 +257,23 @@ def validate(garment_id):
 
     log_section("VTO")
     vto_model = vto.get("model", "fash")
-    vto_prompt = vto.get("prompt")
+    append_garment_name_to_prompt = vto.get(
+        "append_garment_name_to_prompt",
+        False
+    )
+    try:
+        vto_prompt = prompt_text(vto.get("prompt"), "vto.prompt")
+    except RuntimeError as e:
+        fail(str(e))
     log_kv("VTO model", vto_model)
     log_kv("VTO prompt present", bool(vto_prompt))
+    log_kv("Append garment name to prompt", append_garment_name_to_prompt)
 
     if vto_model not in VALID_VTO_MODELS:
         fail(f"Invalid VTO model: {vto_model}")
+
+    if not isinstance(append_garment_name_to_prompt, bool):
+        fail("vto.append_garment_name_to_prompt must be true or false")
 
     if vto_model == "flux" and not vto_prompt:
         fail("vto.prompt is required when vto.model is flux")
@@ -272,6 +301,28 @@ def validate(garment_id):
     if original_image_credit is not None and not isinstance(original_image_credit, str):
         fail("reel.original_image_credit must be a string when provided")
 
+    default_intro_duration = 2.1 if body_type_mode else 1.8
+    default_result_duration = 1.5 if body_type_mode else 1.0
+    default_end_card_duration = 1.5 if body_type_mode else 1.0
+    intro_duration = validate_reel_duration(
+        reel,
+        "intro_duration",
+        default_intro_duration
+    )
+    result_duration = validate_reel_duration(
+        reel,
+        "result_duration",
+        default_result_duration
+    )
+    end_card_duration = validate_reel_duration(
+        reel,
+        "end_card_duration",
+        default_end_card_duration
+    )
+    log_kv("Reel intro duration", f"{intro_duration:g} sec")
+    log_kv("Reel result duration", f"{result_duration:g} sec")
+    log_kv("Reel end card duration", f"{end_card_duration:g} sec")
+
     ok("Reel config looks good")
 
     log_section("VIDEO")
@@ -279,7 +330,10 @@ def validate(garment_id):
     log_kv("Video enabled", video_enabled)
 
     if video_enabled:
-        video_prompt = video.get("prompt")
+        try:
+            video_prompt = prompt_text(video.get("prompt"), "video.prompt")
+        except RuntimeError as e:
+            fail(str(e))
         video_duration = str(video.get("duration", "5"))
         video_model_id = get_video_model(config)
 
@@ -376,4 +430,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    validate(str(args.id))
+    try:
+        validate(str(args.id))
+    except RuntimeError as e:
+        print(f"\nERROR: {e}")
+        raise SystemExit(1)

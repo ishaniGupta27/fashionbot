@@ -34,10 +34,14 @@ The config must include:
   },
   "vto": {
     "model": "fash or flux",
+    "append_garment_name_to_prompt": true,
     "prompt": "required if model is flux"
   }
 }
 ```
+
+`append_garment_name_to_prompt` is optional. When true, each VTO call appends
+the garment filename to the prompt, for example `Garment name: wide leg jeans.`
 
 Environment:
 
@@ -59,6 +63,18 @@ Audio/voiceover_intro.mp3
 garments/extras/mascot.png
 garments/extras/end.jpg
 ```
+
+Copyable sample configs:
+
+```text
+code/input/example_mode1_single_garment.json
+code/input/example_mode2_batch_garments.json
+code/input/example_mode3_single_garment_video.json
+code/input/example_mode4_body_type_garments.json
+```
+
+The sample files use `_sample` objects for human-readable notes because JSON
+does not support comments. The pipeline ignores those extra keys.
 
 ## Mode 1: Single Garment Image
 
@@ -116,8 +132,8 @@ Reel order:
 
 ```text
 normalized original garment intro: 1.8 sec
-generated VTO images
-end card, if present
+generated VTO images: 1.0 sec each
+end card, if present: 1.0 sec
 ```
 
 Optional intro assets:
@@ -210,7 +226,7 @@ normalized garment 1
 matching VTO result(s)
 normalized garment 2
 matching VTO result(s)
-end card, if present
+end card, if present: 1.0 sec
 ```
 
 Code labels:
@@ -284,9 +300,9 @@ Reel order:
 
 ```text
 normalized original garment: 1.8 sec
-dedicated VTO image: 1 sec
+dedicated VTO image: 1.0 sec
 generated video: slowed to 0.75x
-end card, if present
+end card, if present: 1.0 sec
 ```
 
 Optional intro voiceover:
@@ -353,6 +369,7 @@ archetypes.body_type_model
 Generated files:
 
 ```text
+garments/og/<id>.normalized.jpg
 garments/og/<id>/_normalized_garments/*.jpg
 garments/<id>/<garment_name>.jpg
 reels/reel_<id>.mp4
@@ -361,10 +378,32 @@ reels/reel_<id>.mp4
 Reel order:
 
 ```text
-original body/reference image: 1.8 sec
-generated VTO images
-end card, if present
+normalized original body/reference image: 2.1 sec
+generated VTO images: 1.5 sec each
+end card, if present: 1.5 sec
 ```
+
+Mode 4 intro text:
+
+```text
+reel.original_image_description and reel.original_image_credit are centered
+in a wide banner around the 3/4 vertical point of the body/reference image.
+Generated result clips show the garment filename as a right-side label around
+the 3/4 vertical point, inset from the edge for Reels/Shorts UI.
+```
+
+Timing params:
+
+```json
+"reel": {
+  "intro_duration": 2.1,
+  "result_duration": 1.5,
+  "end_card_duration": 1.5
+}
+```
+
+Modes 1-3 default to `1.8 / 1.0 / 1.0`. Mode 4 defaults to
+`2.1 / 1.5 / 1.5`. Any mode can override those values in `reel`.
 
 ## Validation Behavior
 
@@ -383,6 +422,7 @@ video duration is valid
 Mode 2 does not enable video
 planned VTO and video call counts
 voiceover availability for modes that use it
+Mode 4 body/avatar model exists
 ```
 
 Validation does not make fal.ai calls.

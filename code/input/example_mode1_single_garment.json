@@ -1,0 +1,39 @@
+{
+  "_sample": {
+    "mode_name": "Mode 1: Single Garment Image",
+    "how_mode_is_detected": "Use this when garments/og/<id>.jpg exists and garments/og/<id>/ does not exist.",
+    "input_files": [
+      "garments/og/<id>.jpg",
+      "archetypes.single_garment_models folder with one or more model/avatar images"
+    ],
+    "flow": [
+      "Normalize the single garment image to garments/og/<id>.normalized.jpg.",
+      "Try that one garment on every model image in archetypes.single_garment_models.",
+      "Build a reel from the normalized garment intro, generated VTO images, and optional end card."
+    ],
+    "outputs": [
+      "garments/og/<id>.normalized.jpg",
+      "garments/<id>/*.jpg",
+      "reels/reel_<id>.mp4"
+    ],
+    "copy_hint": "Copy this file to code/input/<id>.json, then replace paths and text for the run."
+  },
+  "archetypes": {
+    "single_garment_models": "/Users/Himanshu/Documents/fashionbot/archetypes/final"
+  },
+  "vto": {
+    "model": "flux",
+    "append_garment_name_to_prompt": false,
+    "prompt": "virtual try on. show the garment naturally fitted on the model. preserve realistic fabric, garment details, lighting, proportions, and full outfit visibility."
+  },
+  "video": {
+    "enabled": false
+  },
+  "reel": {
+    "intro_duration": 1.8,
+    "result_duration": 1.0,
+    "end_card_duration": 1.0,
+    "original_image_description": "Original garment reference",
+    "original_image_credit": "source/credit"
+  }
+}
