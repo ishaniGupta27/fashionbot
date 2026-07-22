@@ -10,9 +10,10 @@ from moviepy import (
     concatenate_videoclips,
     vfx,
 )
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 from .files import display_name, image_files, media_files, resolve_audio_file, resolve_image_file
+from .fonts import bold_font
 from .settings import (
     DEFAULT_AUDIO,
     DEFAULT_END_CARD,
@@ -33,17 +34,14 @@ TEXT_LAYOUT_BODY_TYPE = "body_type"
 
 
 def get_font(size):
-    font_paths = [
-        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-        "/System/Library/Fonts/Supplemental/Helvetica Bold.ttf",
-        "/Library/Fonts/Arial Bold.ttf",
-    ]
+    return bold_font(size)
 
-    for font_path in font_paths:
-        if Path(font_path).exists():
-            return ImageFont.truetype(font_path, size)
 
-    return ImageFont.load_default()
+def render_canvas(img):
+    if img.size == (VIDEO_WIDTH, VIDEO_HEIGHT):
+        return img
+
+    return img.resize((VIDEO_WIDTH, VIDEO_HEIGHT), Image.Resampling.LANCZOS)
 
 
 def label_from_name(name):
@@ -90,7 +88,7 @@ def render_labeled_image(
     tmp_dir = Path(tmp_dir)
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
-    img = Image.open(path).convert("RGB")
+    img = render_canvas(Image.open(path).convert("RGB"))
     overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
@@ -121,7 +119,7 @@ def render_labeled_image(
         overlay.alpha_composite(mascot, (x, y))
 
     if side_label:
-        font_size = max(22, img.width // 34)
+        font_size = max(48, img.width // 22)
         font = get_font(font_size)
         max_width = int(img.width * 0.32)
         lines = wrap_text(draw, side_label, font, max_width)

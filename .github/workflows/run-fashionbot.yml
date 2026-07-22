@@ -63,10 +63,10 @@ jobs:
           python --version
           python -m pip --version
 
-      - name: 05 Install ffmpeg and rclone
+      - name: 05 Install ffmpeg, rclone, and fonts
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg rclone
+          sudo apt-get install -y ffmpeg rclone fonts-dejavu-core
 
       - name: 06 Show tool versions
         run: |

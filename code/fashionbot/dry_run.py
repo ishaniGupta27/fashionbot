@@ -1,23 +1,14 @@
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 from .files import display_name, image_files
+from .fonts import bold_font
 from .settings import VIDEO_HEIGHT, VIDEO_WIDTH
 
 
 def font(size):
-    font_paths = [
-        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-        "/System/Library/Fonts/Supplemental/Helvetica Bold.ttf",
-        "/Library/Fonts/Arial Bold.ttf",
-    ]
-
-    for path in font_paths:
-        if Path(path).exists():
-            return ImageFont.truetype(path, size)
-
-    return ImageFont.load_default()
+    return bold_font(size)
 
 
 def draw_centered_text(draw, lines, y, fill=(255, 255, 255)):
