@@ -50,3 +50,12 @@ def archetypes_dir():
     return Path(
         os.environ.get("FASHIONBOT_ARCHETYPES_DIR", BASE_DIR / "archetypes")
     ).expanduser()
+
+
+def archetype_metadata_dir():
+    return Path(
+        os.environ.get(
+            "FASHIONBOT_ARCHETYPE_METADATA_DIR",
+            BASE_DIR / "archetype_metadata",
+        )
+    ).expanduser()

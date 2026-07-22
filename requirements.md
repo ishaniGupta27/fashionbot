@@ -43,6 +43,12 @@ If `FASHIONBOT_ARCHETYPES_DIR` is not set, it uses:
 /Users/Himanshu/Documents/fashionbot/archetypes
 ```
 
+If `FASHIONBOT_ARCHETYPE_METADATA_DIR` is not set, it uses:
+
+```text
+/Users/Himanshu/Documents/fashionbot/archetype_metadata
+```
+
 Shared reusable media lives in:
 
 ```text
@@ -50,6 +56,11 @@ assets/audio/
 assets/reel/
 assets/youtube/
 ```
+
+`assets/` and `archetypes/` are heavy media folders and should normally come
+from remote storage in orchestrated runs.
+
+`archetype_metadata/` contains lightweight JSON metadata and stays in Git.
 
 ## Job Contract
 
@@ -72,7 +83,7 @@ jobs/<job_id>/
 
 All `inputs.*` paths inside `job.json` must be relative to the job folder.
 Archetypes are not copied into jobs. Jobs reference central archetype ids from
-`archetypes/catalog.json`.
+`archetype_metadata/catalog.json`.
 
 ## Supported Modes
 

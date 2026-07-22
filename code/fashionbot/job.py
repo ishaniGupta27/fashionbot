@@ -29,12 +29,13 @@ class Job:
     root: Path
     config: dict
     archetype_root: Path
+    archetype_metadata_root: Path
     outputs_dir: Path
     logs_dir: Path
     status_path: Path
 
 
-def load_job(job_id, jobs_root, archetype_root):
+def load_job(job_id, jobs_root, archetype_root, archetype_metadata_root=None):
     job_root = Path(jobs_root) / str(job_id)
     config_path = job_root / "job.json"
 
@@ -61,6 +62,11 @@ def load_job(job_id, jobs_root, archetype_root):
         root=job_root,
         config=config,
         archetype_root=Path(archetype_root),
+        archetype_metadata_root=(
+            Path(archetype_metadata_root)
+            if archetype_metadata_root is not None
+            else Path(archetype_root)
+        ),
         outputs_dir=job_root / "outputs",
         logs_dir=job_root / "logs",
         status_path=job_root / "status.json",
@@ -163,13 +169,21 @@ def validate_models(job, models):
         archetype_id = models.get("archetype_id")
         if archetype_id is None:
             raise FashionbotError(f"{job.mode} requires models.archetype_id")
-        resolve_archetype(archetype_id, job.archetype_root)
+        resolve_archetype(
+            archetype_id,
+            job.archetype_root,
+            job.archetype_metadata_root,
+        )
         return
 
     archetype_ids = models.get("archetype_ids")
     if not isinstance(archetype_ids, list) or not archetype_ids:
         raise FashionbotError(f"{job.mode} requires models.archetype_ids")
-    resolve_archetypes(archetype_ids, job.archetype_root)
+    resolve_archetypes(
+        archetype_ids,
+        job.archetype_root,
+        job.archetype_metadata_root,
+    )
 
 
 def validate_job(job):

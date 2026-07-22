@@ -287,12 +287,15 @@ Archetypes are reusable known model/body images stored centrally under:
 archetypes/
 ```
 
+This is a heavy media folder. In orchestrated runs it should come from remote
+storage.
+
 Jobs do not copy archetype images. Jobs reference archetypes by id.
 
-The catalog lives at:
+The lightweight metadata catalog lives at:
 
 ```text
-archetypes/catalog.json
+archetype_metadata/catalog.json
 ```
 
 Example:
@@ -382,7 +385,7 @@ High-level flow:
 ```text
 1. Load jobs/<job_id>/job.json
 2. Validate required inputs for the selected mode
-3. Resolve archetype ids through archetypes/catalog.json
+3. Resolve archetype ids through archetype_metadata/catalog.json
 4. Normalize garment/body images to 1080x1920 canvas
 5. Generate VTO images through fal.ai, unless --dry-run is used
 6. Optionally generate video for video mode

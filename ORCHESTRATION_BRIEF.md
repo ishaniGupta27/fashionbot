@@ -55,9 +55,12 @@ jobs/
     status.json
 
 archetypes/
-  catalog.json
   final/
   body_types/
+
+archetype_metadata/
+  catalog.json
+  *.json
 
 assets/
   audio/
@@ -67,8 +70,11 @@ assets/
 
 The job folder contains new per-job inputs.
 
-The archetype folder contains reusable model/body images selected by id from
-`archetypes/catalog.json`.
+The archetype folder contains reusable model/body images. Those images are
+selected by id from `archetype_metadata/catalog.json`.
+
+`archetype_metadata/` is lightweight and belongs in Git. `archetypes/` and
+`assets/` are heavy media folders and belong in remote storage.
 
 The assets folder contains reusable media like audio, end cards, mascot images,
 and YouTube assets.
@@ -102,7 +108,8 @@ Minimum responsibilities:
 - make sure `jobs/<job_id>/job.json` exists
 - make sure job input images exist under `jobs/<job_id>/inputs/`
 - keep any existing `jobs/<job_id>/outputs/` files so reruns can resume
-- make sure `archetypes/` and `assets/` are available on the runner
+- make sure remote `archetypes/` and `assets/` are available on the runner
+- make sure Git-tracked `archetype_metadata/` is available in the checkout
 - install Python dependencies
 - install or provide `ffmpeg`
 - set secrets such as `FAL_KEY`
@@ -153,6 +160,7 @@ Useful environment variables:
 FAL_KEY
 FASHIONBOT_JOBS_DIR
 FASHIONBOT_ARCHETYPES_DIR
+FASHIONBOT_ARCHETYPE_METADATA_DIR
 FASHIONBOT_REMOTE_ROOT
 FASHIONBOT_RCLONE_BIN
 ```
@@ -195,7 +203,7 @@ Weaknesses:
 - hosted runners are temporary
 - artifacts/storage have free-tier limits
 - large media files may not fit well in GitHub
-- archetypes/assets must be present in the repo or downloaded during the run
+- archetypes/assets must be downloaded during the run or already cached on the runner
 - real VTO jobs may consume fal.ai money quickly if triggered carelessly
 
 Recommendation:
@@ -404,8 +412,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install ffmpeg and rclone
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg rclone
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt
@@ -439,15 +447,15 @@ steps:
 
 ```text
 1. Download jobs/<job_id>/ from Google Drive
-2. Download or mount archetypes/ and assets/
+2. Download or mount remote archetypes/ and assets/
 3. Run Fashionbot
 4. Upload the full updated jobs/<job_id>/ folder back to Google Drive
 ```
 
 For a hosted runner, download the full job folder every run.
 
-For a self-hosted runner or VPS, keep archetypes/assets cached locally and only
-download the full job folder for the selected job id.
+For a self-hosted runner or VPS, keep heavy archetypes/assets cached locally and
+only download the full job folder for the selected job id when appropriate.
 
 ## Rerun Behavior
 

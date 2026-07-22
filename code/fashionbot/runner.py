@@ -94,7 +94,11 @@ def mode_one_garment_multiple_bodies(job, dry_run=False):
     reel = reel_settings(job)
 
     garment = relpath(job, inputs["garment_image"], "inputs.garment_image")
-    model_paths = resolve_archetypes(models["archetype_ids"], job.archetype_root)
+    model_paths = resolve_archetypes(
+        models["archetype_ids"],
+        job.archetype_root,
+        job.archetype_metadata_root,
+    )
     normalized_garment = normalize_garment_file(job, garment)
     vto_dir = job.outputs_dir / "vto"
     vto_dir.mkdir(parents=True, exist_ok=True)
@@ -133,7 +137,11 @@ def mode_multiple_garments_multiple_bodies(job, dry_run=False):
     reel = reel_settings(job)
 
     garments_dir = relpath(job, inputs["garments_dir"], "inputs.garments_dir")
-    model_paths = resolve_archetypes(models["archetype_ids"], job.archetype_root)
+    model_paths = resolve_archetypes(
+        models["archetype_ids"],
+        job.archetype_root,
+        job.archetype_metadata_root,
+    )
     normalized_dir = normalize_garment_folder(job, garments_dir)
     vto_dir = job.outputs_dir / "vto"
     vto_dir.mkdir(parents=True, exist_ok=True)
@@ -173,7 +181,11 @@ def mode_one_body_multiple_garments(job, dry_run=False):
 
     original = relpath(job, inputs["original_image"], "inputs.original_image")
     garments_dir = relpath(job, inputs["garments_dir"], "inputs.garments_dir")
-    model_path = resolve_archetype(models["archetype_id"], job.archetype_root)
+    model_path = resolve_archetype(
+        models["archetype_id"],
+        job.archetype_root,
+        job.archetype_metadata_root,
+    )
 
     normalized_original = normalize_image(
         original,
@@ -220,7 +232,11 @@ def mode_video(job, dry_run=False):
     reel = reel_settings(job)
 
     garment = relpath(job, inputs["garment_image"], "inputs.garment_image")
-    model_path = resolve_archetype(models["archetype_id"], job.archetype_root)
+    model_path = resolve_archetype(
+        models["archetype_id"],
+        job.archetype_root,
+        job.archetype_metadata_root,
+    )
     normalized_garment = normalize_garment_file(job, garment)
 
     vto_dir = job.outputs_dir / "vto"
@@ -290,6 +306,7 @@ def run_job(job, dry_run=False):
     log_kv("Mode", job.mode)
     log_kv("Job folder", job.root)
     log_kv("Archetype folder", job.archetype_root)
+    log_kv("Archetype metadata", job.archetype_metadata_root)
     log_kv("Dry run", dry_run)
 
     handler = MODE_HANDLERS.get(job.mode)

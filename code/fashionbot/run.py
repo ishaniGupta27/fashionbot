@@ -15,7 +15,12 @@ from .remote import (
     remote_root_from_env,
 )
 from .runner import run_job
-from .settings import ASSETS_DIR, archetypes_dir, jobs_dir
+from .settings import (
+    ASSETS_DIR,
+    archetype_metadata_dir,
+    archetypes_dir,
+    jobs_dir,
+)
 
 
 class TeeStream:
@@ -80,6 +85,11 @@ def main(argv=None):
         help="Override FASHIONBOT_ARCHETYPES_DIR",
     )
     parser.add_argument(
+        "--archetype-metadata-dir",
+        default=None,
+        help="Override FASHIONBOT_ARCHETYPE_METADATA_DIR",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Skip fal.ai calls and create local mock outputs.",
@@ -107,6 +117,9 @@ def main(argv=None):
 
     active_jobs_dir = args.jobs_dir or jobs_dir()
     active_archetypes_dir = args.archetypes_dir or archetypes_dir()
+    active_archetype_metadata_dir = (
+        args.archetype_metadata_dir or archetype_metadata_dir()
+    )
     active_remote_root = args.remote_root or remote_root_from_env()
     active_rclone_bin = args.rclone_bin or rclone_bin_from_env()
     log_path = run_log_path(active_jobs_dir, job_id)
@@ -127,6 +140,7 @@ def main(argv=None):
                 print(f"rclone: {active_rclone_bin}")
                 print(f"Local assets: {ASSETS_DIR}")
                 print(f"Local archetypes: {active_archetypes_dir}")
+                print(f"Local archetype metadata: {active_archetype_metadata_dir}")
                 print(f"Local jobs: {active_jobs_dir}")
 
                 pull_remote_inputs(
@@ -139,7 +153,12 @@ def main(argv=None):
                 )
                 remote_job_ready = True
 
-            job = load_job(job_id, active_jobs_dir, active_archetypes_dir)
+            job = load_job(
+                job_id,
+                active_jobs_dir,
+                active_archetypes_dir,
+                active_archetype_metadata_dir,
+            )
             outputs = run_job(job, dry_run=args.dry_run)
         except FashionbotError as e:
             print(f"\nERROR: {e}", file=sys.stderr)

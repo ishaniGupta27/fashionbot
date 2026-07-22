@@ -29,11 +29,12 @@ and never uploads anything.
 
 ## Core Contract
 
-Only two root folders are configured globally:
+Three root folders are configured globally:
 
 ```text
-FASHIONBOT_JOBS_DIR          defaults to /Users/Himanshu/Documents/fashionbot/jobs
-FASHIONBOT_ARCHETYPES_DIR    defaults to /Users/Himanshu/Documents/fashionbot/archetypes
+FASHIONBOT_JOBS_DIR                    defaults to /Users/Himanshu/Documents/fashionbot/jobs
+FASHIONBOT_ARCHETYPES_DIR              defaults to /Users/Himanshu/Documents/fashionbot/archetypes
+FASHIONBOT_ARCHETYPE_METADATA_DIR      defaults to /Users/Himanshu/Documents/fashionbot/archetype_metadata
 ```
 
 Each job lives here:
@@ -52,10 +53,22 @@ The code resolves all job input paths relative to the job folder. Archetypes are
 shared centrally and selected by id through:
 
 ```text
-archetypes/catalog.json
+archetype_metadata/catalog.json
 ```
 
-Shared reusable media lives under:
+Git-tracked archetype metadata lives under:
+
+```text
+archetype_metadata/
+  catalog.json
+  *.json
+```
+
+Heavy archetype images live under `archetypes/` and are intended to come from
+remote storage, not Git.
+
+Shared reusable media lives under `assets/` and is also intended to come from
+remote storage:
 
 ```text
 assets/
@@ -81,6 +94,8 @@ Remote storage should mirror the same top-level structure:
 Fashionbot/
   assets/
   archetypes/
+    final/
+    body_types/
   jobs/
     66/
       job.json
@@ -113,6 +128,9 @@ Remote mode does this:
 4. Run Fashionbot
 5. Copy local jobs/<job_id>/ back to remote jobs/<job_id>/
 ```
+
+Remote mode does not copy `archetype_metadata/` from remote storage. Metadata is
+lightweight and lives in Git.
 
 The full job folder is copied both ways so reruns can reuse existing files in
 `outputs/vto/` and skip VTO calls that are already done.
