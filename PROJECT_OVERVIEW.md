@@ -27,6 +27,9 @@ venv/bin/python -m fashionbot.run <job_id> --dry-run
 Each job is a self-contained folder under `jobs/<job_id>/`. The only user input
 needed at runtime is the job id.
 
+`jobs/` is runtime state and is not part of the Git source of truth. Git keeps
+lightweight examples under `job_templates/`.
+
 ## Product Idea
 
 Fashionbot helps create fashion discovery content from a small set of inputs.

@@ -54,6 +54,25 @@ jobs/
     logs/
     status.json
 
+job_templates/
+  one_body_multiple_garments/
+    job.json
+    inputs/
+      original.jpg
+      garments/
+  one_garment_multiple_bodies/
+    job.json
+    inputs/
+      garment.jpg
+  multiple_garments_multiple_bodies/
+    job.json
+    inputs/
+      garments/
+  video/
+    job.json
+    inputs/
+      garment.jpg
+
 archetypes/
   final/
   body_types/
@@ -69,6 +88,10 @@ assets/
 ```
 
 The job folder contains new per-job inputs.
+
+`jobs/` is runtime state and should live locally or in remote storage. It is not
+part of the Git source of truth. `job_templates/` contains lightweight example
+configs that stay in Git.
 
 The archetype folder contains reusable model/body images. Those images are
 selected by id from `archetype_metadata/catalog.json`.
@@ -497,7 +520,7 @@ the same audit trail when the full job folder is uploaded back.
 The clean production direction is:
 
 ```text
-GitHub repo = code
+GitHub repo = code, metadata, and job templates
 Remote storage = job inputs and generated outputs
 Archetype catalog = shared versioned asset set
 GitHub Actions = manual trigger and logs

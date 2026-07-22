@@ -31,19 +31,15 @@ venv/
 .venv/
 env/
 
-# Fashionbot generated job artifacts
-jobs/*/outputs/
-jobs/*/logs/
-jobs/*/status.json
-
 # Heavy shared media lives in remote storage.
 assets/
 archetypes/
+jobs/
 
 # Lightweight archetype metadata stays in Git.
 !archetype_metadata/
 !archetype_metadata/**
 
-# Sample job inputs are intentionally versionable.
-!jobs/sample_*/inputs/
-!jobs/sample_*/inputs/**
+# Lightweight job examples stay in Git; runtime jobs do not.
+!job_templates/
+!job_templates/**

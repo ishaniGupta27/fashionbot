@@ -37,6 +37,18 @@ If `FASHIONBOT_JOBS_DIR` is not set, it uses:
 /Users/Himanshu/Documents/fashionbot/jobs
 ```
 
+`jobs/` is runtime state. It should normally live locally or in remote storage,
+not in Git.
+
+Reusable example configs live in:
+
+```text
+job_templates/
+  <mode>/
+    job.json
+    inputs/
+```
+
 If `FASHIONBOT_ARCHETYPES_DIR` is not set, it uses:
 
 ```text

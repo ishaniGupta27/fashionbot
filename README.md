@@ -49,6 +49,32 @@ jobs/
     status.json
 ```
 
+`jobs/` is runtime state and is not tracked in Git. In remote mode, jobs are
+copied from and back to remote storage.
+
+Lightweight example configs live in:
+
+```text
+job_templates/
+  one_body_multiple_garments/
+    job.json
+    inputs/
+      original.jpg
+      garments/
+  one_garment_multiple_bodies/
+    job.json
+    inputs/
+      garment.jpg
+  multiple_garments_multiple_bodies/
+    job.json
+    inputs/
+      garments/
+  video/
+    job.json
+    inputs/
+      garment.jpg
+```
+
 The code resolves all job input paths relative to the job folder. Archetypes are
 shared centrally and selected by id through:
 
@@ -104,6 +130,9 @@ Fashionbot/
       logs/
       status.json
 ```
+
+Git should not store the remote `jobs/` folder. Git stores only reusable job
+templates under `job_templates/`.
 
 Run:
 
