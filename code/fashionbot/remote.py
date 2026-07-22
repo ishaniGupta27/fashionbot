@@ -1,0 +1,69 @@
+import os
+import subprocess
+from pathlib import Path
+
+from .errors import FashionbotError
+
+
+def remote_root_from_env():
+    return os.environ.get("FASHIONBOT_REMOTE_ROOT")
+
+
+def rclone_bin_from_env():
+    return os.environ.get("FASHIONBOT_RCLONE_BIN", "rclone")
+
+
+def remote_join(root, *parts):
+    remote = str(root).rstrip("/")
+    suffix = "/".join(str(part).strip("/") for part in parts if str(part).strip("/"))
+    return f"{remote}/{suffix}" if suffix else remote
+
+
+def run_rclone_copy(rclone_bin, source, destination, label):
+    command = [rclone_bin, "copy", str(source), str(destination), "--progress"]
+    print(f"\nREMOTE {label}")
+    print("Command: " + " ".join(command))
+
+    try:
+        subprocess.run(command, check=True)
+    except FileNotFoundError as e:
+        raise FashionbotError(
+            "rclone was not found. Install rclone or set FASHIONBOT_RCLONE_BIN "
+            "to the full rclone path."
+        ) from e
+    except subprocess.CalledProcessError as e:
+        raise FashionbotError(f"rclone failed while {label.lower()}") from e
+
+
+def pull_remote_inputs(job_id, remote_root, jobs_root, archetypes_root, assets_root, rclone_bin):
+    run_rclone_copy(
+        rclone_bin,
+        remote_join(remote_root, "assets"),
+        assets_root,
+        "PULL assets",
+    )
+    run_rclone_copy(
+        rclone_bin,
+        remote_join(remote_root, "archetypes"),
+        archetypes_root,
+        "PULL archetypes",
+    )
+    run_rclone_copy(
+        rclone_bin,
+        remote_join(remote_root, "jobs", job_id),
+        Path(jobs_root) / str(job_id),
+        "PULL job folder",
+    )
+
+
+def push_remote_job(job_id, remote_root, jobs_root, rclone_bin):
+    local_job = Path(jobs_root) / str(job_id)
+    if not local_job.exists():
+        raise FashionbotError(f"Local job folder does not exist, cannot push: {local_job}")
+
+    run_rclone_copy(
+        rclone_bin,
+        local_job,
+        remote_join(remote_root, "jobs", job_id),
+        "PUSH job folder",
+    )

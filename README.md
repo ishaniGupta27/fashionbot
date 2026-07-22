@@ -16,6 +16,17 @@ outputs, and build a reel without calling fal.ai:
 venv/bin/python -m fashionbot.run sample_one_body_multiple_garments --dry-run
 ```
 
+Use `--remote` when the job, archetypes, and assets should be copied from a
+remote storage root before the run, and the full job folder should be copied
+back after the run:
+
+```bash
+venv/bin/python -m fashionbot.run 66 --remote --remote-root gdrive:Fashionbot
+```
+
+Remote mode uses `rclone copy`. Local mode never downloads from remote storage
+and never uploads anything.
+
 ## Core Contract
 
 Only two root folders are configured globally:
@@ -57,6 +68,68 @@ assets/
   youtube/
     banner.png
     pic.png
+```
+
+## Remote Mode
+
+Remote mode is an explicit orchestration path. It is intended for GitHub Actions
+or any machine where Google Drive is the source of truth.
+
+Remote storage should mirror the same top-level structure:
+
+```text
+Fashionbot/
+  assets/
+  archetypes/
+  jobs/
+    66/
+      job.json
+      inputs/
+      outputs/
+      logs/
+      status.json
+```
+
+Run:
+
+```bash
+cd /Users/Himanshu/Documents/fashionbot/code
+venv/bin/python -m fashionbot.run 66 --remote --remote-root gdrive:Fashionbot
+```
+
+Equivalent environment variable:
+
+```bash
+export FASHIONBOT_REMOTE_ROOT="gdrive:Fashionbot"
+venv/bin/python -m fashionbot.run 66 --remote
+```
+
+Remote mode does this:
+
+```text
+1. Copy remote assets/ to local assets/
+2. Copy remote archetypes/ to local archetypes/
+3. Copy remote jobs/<job_id>/ to local jobs/<job_id>/
+4. Run Fashionbot
+5. Copy local jobs/<job_id>/ back to remote jobs/<job_id>/
+```
+
+The full job folder is copied both ways so reruns can reuse existing files in
+`outputs/vto/` and skip VTO calls that are already done.
+
+Required remote setup:
+
+```text
+rclone installed
+rclone remote configured, for example gdrive
+FASHIONBOT_REMOTE_ROOT or --remote-root
+FAL_KEY for real fal.ai calls
+```
+
+Optional:
+
+```text
+FASHIONBOT_RCLONE_BIN=/full/path/to/rclone
 ```
 
 ## Modes
