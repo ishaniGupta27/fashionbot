@@ -1,380 +1,338 @@
 # Fashionbot
 
-Fashionbot is a local pipeline for turning garment images into short fashion
-reels. It normalizes garment photos, generates virtual try-on images with
-fal.ai, can optionally generate one video from a VTO still, and builds a final
-vertical reel with audio.
-
-The main command is intentionally simple:
+Fashionbot turns garment and body-reference images into vertical fashion reels.
+The pipeline is job-based: each run has one folder under `jobs/`, and the CLI
+only needs the job id.
 
 ```bash
 cd /Users/Himanshu/Documents/fashionbot/code
-python3 run_pipeline.py --id 33
+venv/bin/python -m fashionbot.run sample_one_body_multiple_garments
 ```
 
-All creative and model choices for a run live in:
+Use `--dry-run` to validate structure, normalize images, create mock VTO/video
+outputs, and build a reel without calling fal.ai:
+
+```bash
+venv/bin/python -m fashionbot.run sample_one_body_multiple_garments --dry-run
+```
+
+## Core Contract
+
+Only two root folders are configured globally:
 
 ```text
-code/input/{id}.json
+FASHIONBOT_JOBS_DIR          defaults to /Users/Himanshu/Documents/fashionbot/jobs
+FASHIONBOT_ARCHETYPES_DIR    defaults to /Users/Himanshu/Documents/fashionbot/archetypes
 ```
 
-## What It Does
-
-The pipeline can run four internal modes.
-
-### Mode 1: Single Garment Image
-
-Input:
+Each job lives here:
 
 ```text
-garments/og/{id}.jpg
+jobs/
+  69/
+    job.json
+    inputs/
+    outputs/
+    logs/
+    status.json
 ```
 
-Flow:
+The code resolves all job input paths relative to the job folder. Archetypes are
+shared centrally and selected by id through:
 
 ```text
-normalize garment
-generate VTO images against archetypes.single_garment_models
-build reel from generated images
+archetypes/catalog.json
 ```
 
-Output:
+Shared reusable media lives under:
 
 ```text
-garments/{id}/*.jpg
-reels/reel_{id}.mp4
+assets/
+  audio/
+    Jazz.mp3
+    voiceover_intro.mp3
+  reel/
+    end.jpg
+    mascot.jpg
+  youtube/
+    banner.png
+    pic.png
 ```
 
-### Mode 2: Batch Garment Folder
+## Modes
 
-Input:
+Fashionbot supports four modes.
+
+### one_garment_multiple_bodies
+
+One garment is shown on multiple known archetype/body models.
 
 ```text
-garments/og/{id}/
+jobs/66/
+  job.json
+  inputs/
+    garment.jpg
 ```
-
-Flow:
-
-```text
-normalize each garment into garments/og/{id}/_normalized_garments
-generate garment x model VTO images
-build grouped reel
-```
-
-Output naming:
-
-```text
-code_2507:042:679.jpg + 34.png
--> garments/{id}/code_2507:042:679__34.jpg
-```
-
-Labels in reels:
-
-```text
-code_2507:042:679 -> 2507/042/679
-```
-
-Video is intentionally not allowed in this mode.
-
-### Mode 3: Single Garment With Video
-
-Input:
-
-```text
-garments/og/{id}.jpg
-```
-
-Config:
-
-```json
-"video": {
-  "enabled": true
-}
-```
-
-Flow:
-
-```text
-normalize garment
-generate one dedicated VTO still using archetypes.video_model
-generate one Kling image-to-video asset
-build reel: original image, VTO still, video, end card
-```
-
-Outputs:
-
-```text
-garments/{id}/video_source__{video_model_name}.jpg
-garments/{id}/videos/video_source__{video_model_name}.mp4
-reels/reel_{id}.mp4
-```
-
-### Mode 4: Body Type With Multiple Garments
-
-Input:
-
-```text
-garments/og/{id}.jpg      original body/reference image for reel intro
-garments/og/{id}/         garment folder
-```
-
-Config:
-
-```json
-"mode": "body_type_garments",
-"archetypes": {
-  "body_type_model": "/path/to/avatar-or-model-image.jpg"
-}
-```
-
-Flow:
-
-```text
-normalize original body/reference image
-normalize each garment
-generate each garment on one body/avatar model image
-build reel: normalized body/reference image, generated VTO images, end card
-```
-
-Mode 4 uses a special intro text treatment: `reel.original_image_description`
-and `reel.original_image_credit` are horizontally centered in a wide banner
-placed around the 3/4 vertical point of the original body/reference image.
-Generated Mode 4 result clips also show the garment filename as a right-side
-label around the 3/4 vertical point, inset from the edge for Reels/Shorts UI.
-
-Output:
-
-```text
-garments/og/{id}.normalized.jpg
-garments/og/{id}/_normalized_garments/*.jpg
-garments/{id}/*.jpg
-reels/reel_{id}.mp4
-```
-
-## Config File
-
-Create one JSON file per run:
-
-```text
-code/input/33.json
-```
-
-Each real run file is named by id, for example `code/input/63.json`.
-The repo also includes copyable sample configs:
-
-```text
-code/input/example_mode1_single_garment.json
-code/input/example_mode2_batch_garments.json
-code/input/example_mode3_single_garment_video.json
-code/input/example_mode4_body_type_garments.json
-```
-
-Those sample files include `_sample` notes. JSON does not support comments, so
-the `_sample` object is used as readable documentation and is ignored by the
-pipeline.
-
-Minimal shared shape:
 
 ```json
 {
-  "archetypes": {
-    "single_garment_models": "/Users/Himanshu/Documents/fashionbot/archetypes/final",
-    "garment_batch_models": "/Users/Himanshu/Documents/fashionbot/archetypes/model",
-    "body_type_model": "/Users/Himanshu/Documents/fashionbot/archetypes/body_types/model.jpg",
-    "video_model": "/Users/Himanshu/Documents/fashionbot/archetypes/video/model.jpg"
+  "mode": "one_garment_multiple_bodies",
+  "inputs": {
+    "garment_image": "inputs/garment.jpg"
+  },
+  "models": {
+    "archetype_ids": ["1", "13", "34"]
   },
   "vto": {
     "model": "flux",
-    "append_garment_name_to_prompt": false,
-    "prompt": "Describe the garment and styling requirements for virtual try-on."
-  },
-  "video": {
-    "enabled": false,
-    "model": "fal-ai/kling-video/v3/standard/image-to-video",
-    "prompt": "Describe the motion for the generated fashion video.",
-    "duration": "5",
-    "generate_audio": false
+    "prompt": [
+      "virtual try on.",
+      "show the garment naturally fitted on the model.",
+      "preserve realistic fabric, lighting, proportions, and full outfit detail."
+    ],
+    "append_garment_name_to_prompt": false
   },
   "reel": {
-    "use_audio": true,
-    "include_end_card": true,
+    "original_image_description": "Original garment",
+    "original_image_credit": "",
     "intro_duration": 1.8,
     "result_duration": 1.0,
-    "end_card_duration": 1.0,
-    "original_image_description": "Original garment photo description",
-    "original_image_credit": "Photographer or source name"
+    "end_card_duration": 1.0
   }
 }
 ```
 
-`video` can be omitted entirely. Missing video config means video is disabled.
-`vto.append_garment_name_to_prompt` is optional. When true, the generator adds
-the garment filename to each VTO prompt, for example
-`Garment name: wide leg jeans.` This is useful for batch and Mode 4 runs where
-filenames carry garment semantics.
-`reel.intro_duration`, `reel.result_duration`, and
-`reel.end_card_duration` are optional timing controls in seconds. Modes 1-3
-default to `1.8 / 1.0 / 1.0`; Mode 4 defaults to `2.1 / 1.5 / 1.5`.
-`reel.original_image_description` and `reel.original_image_credit` are optional.
-When present, they are rendered on the original garment image clip only, with
-the description above the credit. Mode 4 uses the centered 3/4-height banner
-described above.
-
-## Folder Layout
-
-Important folders:
+Output:
 
 ```text
-Audio/
-  Jazz.mp3
-  voiceover_intro.mp3        optional
-
-archetypes/
-  final/                     common Mode 1 model set
-  model/                     common Mode 2 model set
-  body_types/                suggested home for Mode 4 body/avatar images
-  video/                     suggested home for video_model
-
-code/
-  input/
-    example.json
-    example_mode1_single_garment.json
-    example_mode2_batch_garments.json
-    example_mode3_single_garment_video.json
-    example_mode4_body_type_garments.json
-    {id}.json
-
-garments/
-  og/
-    {id}.jpg                 Mode 1 or Mode 3 input
-    {id}.jpg + {id}/          Mode 4 body image + garment folder
-    {id}/                    Mode 2 or Mode 4 input folder
-      code_2507:042:679.jpg
-      _normalized_garments/
-  {id}/                      generated VTO outputs
-    videos/                  generated video outputs
-  extras/
-    end.jpg
-
-reels/
-  reel_{id}.mp4
+outputs/
+  normalized/garment.jpg
+  vto/1.jpg
+  vto/13.jpg
+  vto/34.jpg
+  reel.mp4
 ```
 
-## Scripts
+### multiple_garments_multiple_bodies
 
-`run_pipeline.py`
-
-Main entrypoint. Loads config, validates input, detects the internal mode,
-runs normalization, VTO generation, optional video generation, and reel build.
-
-`validate_input.py`
-
-Chatty preflight check. It runs before expensive fal.ai calls and reports
-detected mode, paths, prompts, guardrails, and planned call counts.
-
-`pipeline_config.py`
-
-Shared paths, file helpers, and internal mode map. This is where the four
-pipeline modes and their feature flags live.
-
-`normalize.py`
-
-Places a garment image on a 1080x1920 gray canvas. Supports optional
-`--output` for batch normalization.
-
-`generate_vto.py`
-
-Calls fal.ai VTO APIs. Supports:
+Batch mode. Multiple garments are each shown on multiple known archetype/body
+models.
 
 ```text
-one garment -> many models
-many garments -> many models
-one garment -> one model
-many garments -> one model
+jobs/67/
+  job.json
+  inputs/
+    garments/
+      dress_1.jpg
+      dress_2.jpg
 ```
 
-`generate_video.py`
+```json
+{
+  "mode": "multiple_garments_multiple_bodies",
+  "inputs": {
+    "garments_dir": "inputs/garments"
+  },
+  "models": {
+    "archetype_ids": ["1", "13"]
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": [
+      "virtual try on.",
+      "show each garment naturally fitted on the model."
+    ],
+    "append_garment_name_to_prompt": true
+  },
+  "reel": {
+    "original_image_description": "Original garment",
+    "intro_duration": 1.8,
+    "result_duration": 1.0,
+    "end_card_duration": 1.0
+  }
+}
+```
 
-Calls fal.ai Kling image-to-video for one selected VTO still. Always asks for
-confirmation before making the video call.
-
-`build_reel_audio.py`
-
-Builds the final vertical reel with audio. Supports image reels, grouped batch
-reels, and featured video reels. In featured video mode, it uses:
+Output:
 
 ```text
-original image: 1.8s by default
-VTO still: 1.0s by default
-generated video: slowed to 0.75x
-end card: 1.0s by default
+outputs/
+  normalized/garments/*.jpg
+  vto/dress_1__1.jpg
+  vto/dress_1__13.jpg
+  reel.mp4
 ```
 
-If `Audio/voiceover_intro.*` exists, it plays during the first image and the
-background music starts after the intro.
+### video
 
-## Environment
+One garment plus one known archetype/body model. Fashionbot creates one VTO
+image, one generated video, and one reel.
 
-Use the project venv from `code/`:
+```text
+jobs/68/
+  job.json
+  inputs/
+    garment.jpg
+```
+
+```json
+{
+  "mode": "video",
+  "inputs": {
+    "garment_image": "inputs/garment.jpg"
+  },
+  "models": {
+    "archetype_id": "13"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": ["virtual try on."]
+  },
+  "video": {
+    "prompt": [
+      "subtle fashion editorial movement.",
+      "natural camera motion.",
+      "preserve the outfit and model likeness."
+    ],
+    "duration": "5",
+    "generate_audio": false
+  },
+  "reel": {
+    "original_image_description": "Original garment",
+    "intro_duration": 1.8,
+    "result_duration": 1.0,
+    "end_card_duration": 1.0
+  }
+}
+```
+
+Output:
+
+```text
+outputs/
+  normalized/garment.jpg
+  vto/tryon.jpg
+  video/tryon.mp4
+  reel.mp4
+```
+
+### one_body_multiple_garments
+
+One original body/reference image, one known archetype/body model, and multiple
+new garment images.
+
+```text
+jobs/69/
+  job.json
+  inputs/
+    original.jpg
+    garments/
+      slim-jeans.jpg
+      wide-jeans.jpg
+```
+
+```json
+{
+  "mode": "one_body_multiple_garments",
+  "inputs": {
+    "original_image": "inputs/original.jpg",
+    "garments_dir": "inputs/garments"
+  },
+  "models": {
+    "archetype_id": "66"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": [
+      "virtual try on.",
+      "keep the same body type, face, hair, and overall likeness from the model image.",
+      "change pose slightly for movement.",
+      "show each garment naturally fitted on the body.",
+      "preserve realistic fabric, proportions, lighting, and full outfit detail."
+    ],
+    "append_garment_name_to_prompt": true
+  },
+  "reel": {
+    "original_image_description": "Body type inspiration",
+    "original_image_credit": "",
+    "intro_duration": 2.1,
+    "result_duration": 1.5,
+    "end_card_duration": 1.5,
+    "show_result_name_labels": true
+  }
+}
+```
+
+Output:
+
+```text
+outputs/
+  normalized/original.jpg
+  normalized/garments/*.jpg
+  vto/slim-jeans.jpg
+  vto/wide-jeans.jpg
+  reel.mp4
+```
+
+## Archetype Catalog
+
+Archetype ids are defined centrally:
+
+```json
+{
+  "1": "final/1.png",
+  "13": "final/13.png",
+  "66": "body_types/66.jpg"
+}
+```
+
+Jobs reference ids only:
+
+```json
+"models": {
+  "archetype_id": "66"
+}
+```
+
+or:
+
+```json
+"models": {
+  "archetype_ids": ["1", "13", "34"]
+}
+```
+
+## fal.ai
+
+Real VTO/video calls require:
 
 ```bash
-cd /Users/Himanshu/Documents/fashionbot/code
-source venv/bin/activate
-```
-
-Set your fal.ai key:
-
-```bash
-export FAL_KEY="your_key"
-```
-
-Or save it locally in `code/.env`:
-
-```bash
-FAL_KEY=your_key
-```
-
-## Typical Workflow
-
-1. Add input image or folder:
-
-```text
-garments/og/33.jpg
+export FAL_KEY='your_key'
 ```
 
 or:
 
 ```text
-garments/og/33/
+code/.env
 ```
-
-2. Create config:
 
 ```text
-code/input/33.json
+FAL_KEY=your_key
 ```
 
-3. Validate:
+`--dry-run` never calls fal.ai.
+
+If fal.ai rejects one VTO item because of a content-policy check, multi-image
+modes skip that item, continue with the remaining items, and write the skipped
+details into `status.json`. Single-output `video` mode treats that as a failed
+job because there is no alternate item to continue with.
+
+## Sample Tests
 
 ```bash
-python3 validate_input.py --id 33
+cd /Users/Himanshu/Documents/fashionbot/code
+venv/bin/python -m fashionbot.run sample_one_garment_multiple_bodies --dry-run
+venv/bin/python -m fashionbot.run sample_multiple_garments_multiple_bodies --dry-run
+venv/bin/python -m fashionbot.run sample_video --dry-run
+venv/bin/python -m fashionbot.run sample_one_body_multiple_garments --dry-run
 ```
-
-4. Run:
-
-```bash
-python3 run_pipeline.py --id 33
-```
-
-## Contributing Notes
-
-- Keep user-facing commands simple. Prefer putting creative settings in
-  `code/input/{id}.json`.
-- Add new mode behavior to `PIPELINE_MODES` in `pipeline_config.py` first.
-- Keep guardrails in `validate_input.py` before adding expensive API calls.
-- Preserve Mode 2 as the simple batch/catalog flow. Avoid adding intro,
-  voiceover, mascot, or video features there unless intentionally changing the
-  product behavior.
-- Use direct file scanning for garment batch folders. Filenames such as
-  `code_2507:042:679.jpg` are expected and are displayed as `2507/042/679`.
-- For any new fal.ai model, confirm the API schema before wiring arguments.

@@ -1,0 +1,29 @@
+{
+  "mode": "one_body_multiple_garments",
+  "inputs": {
+    "original_image": "inputs/original.jpg",
+    "garments_dir": "inputs/garments"
+  },
+  "models": {
+    "archetype_id": "66"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": [
+      "virtual try on.",
+      "keep the same body type, face, hair, and overall likeness from the model image.",
+      "change pose slightly for movement.",
+      "show each garment naturally fitted on the body.",
+      "preserve realistic fabric, proportions, lighting, and full outfit detail."
+    ],
+    "append_garment_name_to_prompt": true
+  },
+  "reel": {
+    "original_image_description": "Body type inspiration",
+    "original_image_credit": "",
+    "intro_duration": 2.1,
+    "result_duration": 1.5,
+    "end_card_duration": 1.5,
+    "show_result_name_labels": true
+  }
+}

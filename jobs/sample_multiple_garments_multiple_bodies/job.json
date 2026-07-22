@@ -1,0 +1,25 @@
+{
+  "mode": "multiple_garments_multiple_bodies",
+  "inputs": {
+    "garments_dir": "inputs/garments"
+  },
+  "models": {
+    "archetype_ids": ["1", "13"]
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": [
+      "virtual try on.",
+      "show each garment naturally fitted on the model.",
+      "preserve realistic fabric, lighting, proportions, and full outfit detail."
+    ],
+    "append_garment_name_to_prompt": true
+  },
+  "reel": {
+    "original_image_description": "Original garment",
+    "original_image_credit": "",
+    "intro_duration": 1.8,
+    "result_duration": 1.0,
+    "end_card_duration": 1.0
+  }
+}

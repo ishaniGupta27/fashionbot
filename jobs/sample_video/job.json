@@ -1,0 +1,34 @@
+{
+  "mode": "video",
+  "inputs": {
+    "garment_image": "inputs/garment.jpg"
+  },
+  "models": {
+    "archetype_id": "13"
+  },
+  "vto": {
+    "model": "flux",
+    "prompt": [
+      "virtual try on.",
+      "show the garment naturally fitted on the model.",
+      "preserve realistic fabric, lighting, proportions, face, hair, and full outfit detail."
+    ],
+    "append_garment_name_to_prompt": false
+  },
+  "video": {
+    "prompt": [
+      "subtle fashion editorial movement.",
+      "natural camera motion.",
+      "preserve the outfit and model likeness."
+    ],
+    "duration": "5",
+    "generate_audio": false
+  },
+  "reel": {
+    "original_image_description": "Original garment",
+    "original_image_credit": "",
+    "intro_duration": 1.8,
+    "result_duration": 1.0,
+    "end_card_duration": 1.0
+  }
+}

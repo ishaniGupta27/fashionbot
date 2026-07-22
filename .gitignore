@@ -22,6 +22,7 @@
 # Python (if applicable)
 __pycache__/
 *.pyc
+.pycache_tmp/
 .env
 code/.env
 
@@ -29,3 +30,16 @@ code/.env
 venv/
 .venv/
 env/
+
+# Fashionbot generated job artifacts
+jobs/*/outputs/
+jobs/*/logs/
+jobs/*/status.json
+
+# Shared app assets are intentionally versionable.
+!assets/
+!assets/**
+
+# Sample job inputs are intentionally versionable.
+!jobs/sample_*/inputs/
+!jobs/sample_*/inputs/**
