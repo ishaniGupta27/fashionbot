@@ -164,6 +164,9 @@ lightweight and lives in Git.
 The full job folder is copied both ways so reruns can reuse existing files in
 `outputs/vto/` and skip VTO calls that are already done.
 
+Remote job copy excludes `outputs/normalized/` because normalized images are
+cheap to regenerate. Remote copy also excludes `.DS_Store` files.
+
 Required remote setup:
 
 ```text
@@ -177,6 +180,65 @@ Optional:
 
 ```text
 FASHIONBOT_RCLONE_BIN=/full/path/to/rclone
+```
+
+## GitHub Actions
+
+The workflow lives at:
+
+```text
+.github/workflows/run-fashionbot.yml
+```
+
+It is manually triggered from the GitHub Actions tab and accepts:
+
+```text
+job_id
+remote_root
+execution_mode
+```
+
+Use this first:
+
+```text
+job_id: 2
+remote_root: gdrive:fashionbot
+execution_mode: dry_run
+```
+
+Use `execution_mode: real` when you want fal.ai calls.
+
+Required GitHub repository secrets:
+
+```text
+RCLONE_CONFIG
+FAL_KEY
+```
+
+`RCLONE_CONFIG` should be the full contents of:
+
+```text
+~/.config/rclone/rclone.conf
+```
+
+The workflow runs granular steps:
+
+```text
+checkout repo
+show inputs
+set up Python
+install ffmpeg and rclone
+install Python dependencies
+verify Fashionbot imports
+write rclone config from secret
+verify FAL_KEY for real runs
+check remote root/assets/archetypes/job
+run Fashionbot remote dry-run or real job
+show local status
+show local output tree
+show remote job tree
+write GitHub summary
+upload short-lived artifact backup
 ```
 
 ## Modes

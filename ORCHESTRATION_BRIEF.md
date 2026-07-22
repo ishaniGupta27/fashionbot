@@ -381,10 +381,18 @@ or enqueueing a job, but it is not ideal as the main media runner.
 
 Use GitHub Actions with a manual trigger.
 
-The workflow should accept:
+The checked-in workflow is:
+
+```text
+.github/workflows/run-fashionbot.yml
+```
+
+The workflow accepts:
 
 ```text
 job_id
+remote_root
+execution_mode
 ```
 
 The routine pipeline should run the real job. The cost guardrail comes from
@@ -412,54 +420,20 @@ This preserves:
 - status file
 - timestamped run logs
 
-Example workflow shape:
+Remote job copy should not preserve cheap generated cache such as
+`outputs/normalized/`. Those files can be regenerated locally on the next run.
 
-```yaml
-name: Fashionbot
+The workflow is intentionally granular. It checks out the repo, installs Python,
+installs `ffmpeg` and `rclone`, installs dependencies, verifies imports,
+recreates `rclone.conf` from a GitHub secret, checks remote folders, runs
+Fashionbot, prints local and remote output trees, writes a GitHub summary, and
+uploads a short-lived artifact backup.
 
-on:
-  workflow_dispatch:
-    inputs:
-      job_id:
-        description: "Job id under jobs/"
-        required: true
-
-jobs:
-  run:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install ffmpeg and rclone
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg rclone
-
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run Fashionbot
-        working-directory: code
-        env:
-          FAL_KEY: ${{ secrets.FAL_KEY }}
-          FASHIONBOT_REMOTE_ROOT: gdrive:Fashionbot
-        run: python -m fashionbot.run "${{ inputs.job_id }}" --remote
-
-      - name: Upload GitHub artifact copy
-        uses: actions/upload-artifact@v4
-        with:
-          name: fashionbot-job-${{ inputs.job_id }}
-          path: jobs/${{ inputs.job_id }}/
-```
-
-This example assumes:
+The workflow assumes:
 
 - `requirements.txt` exists at the repo root
-- rclone is installed and configured on the runner
-- `FASHIONBOT_REMOTE_ROOT` points at the remote storage root
+- `RCLONE_CONFIG` is configured as a GitHub secret
+- `FAL_KEY` is configured as a GitHub secret for real runs
 - outputs are small enough if you also keep a GitHub artifact copy
 - Google Drive is the permanent source of truth
 

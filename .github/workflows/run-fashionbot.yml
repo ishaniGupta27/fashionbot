@@ -1,0 +1,198 @@
+name: Run Fashionbot
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: "Job id under remote jobs/"
+        required: true
+        type: string
+      remote_root:
+        description: "rclone remote root"
+        required: true
+        default: "gdrive:fashionbot"
+        type: string
+      execution_mode:
+        description: "Use dry_run for plumbing tests, real for fal.ai generation"
+        required: true
+        default: "dry_run"
+        type: choice
+        options:
+          - dry_run
+          - real
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fashionbot-${{ inputs.job_id }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    name: Job ${{ inputs.job_id }} (${{ inputs.execution_mode }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    env:
+      FASHIONBOT_REMOTE_ROOT: ${{ inputs.remote_root }}
+      FASHIONBOT_JOB_ID: ${{ inputs.job_id }}
+      FASHIONBOT_EXECUTION_MODE: ${{ inputs.execution_mode }}
+
+    steps:
+      - name: 01 Checkout repository
+        uses: actions/checkout@v6
+
+      - name: 02 Show run inputs
+        run: |
+          echo "Job id: ${FASHIONBOT_JOB_ID}"
+          echo "Remote root: ${FASHIONBOT_REMOTE_ROOT}"
+          echo "Execution mode: ${FASHIONBOT_EXECUTION_MODE}"
+          echo "Runner: ${RUNNER_OS}"
+          echo "Workspace: ${GITHUB_WORKSPACE}"
+
+      - name: 03 Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: "requirements.txt"
+
+      - name: 04 Show Python version
+        run: |
+          python --version
+          python -m pip --version
+
+      - name: 05 Install ffmpeg and rclone
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg rclone
+
+      - name: 06 Show tool versions
+        run: |
+          ffmpeg -version
+          rclone version
+
+      - name: 07 Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: 08 Verify Fashionbot imports
+        working-directory: code
+        run: |
+          python -m fashionbot.run --help
+
+      - name: 09 Configure rclone from secret
+        env:
+          RCLONE_CONFIG_SECRET: ${{ secrets.RCLONE_CONFIG }}
+        run: |
+          if [ -z "${RCLONE_CONFIG_SECRET}" ]; then
+            echo "Missing required GitHub secret: RCLONE_CONFIG"
+            exit 1
+          fi
+
+          mkdir -p "${HOME}/.config/rclone"
+          printf '%s' "${RCLONE_CONFIG_SECRET}" > "${HOME}/.config/rclone/rclone.conf"
+          chmod 600 "${HOME}/.config/rclone/rclone.conf"
+          echo "rclone config written"
+
+      - name: 10 Verify fal.ai secret for real runs
+        if: ${{ inputs.execution_mode == 'real' }}
+        env:
+          FAL_KEY: ${{ secrets.FAL_KEY }}
+        run: |
+          if [ -z "${FAL_KEY}" ]; then
+            echo "Missing required GitHub secret for real runs: FAL_KEY"
+            exit 1
+          fi
+          echo "FAL_KEY is present"
+
+      - name: 11 Check remote root
+        run: |
+          rclone lsd "${FASHIONBOT_REMOTE_ROOT}"
+
+      - name: 12 Check remote assets folder
+        run: |
+          rclone lsf "${FASHIONBOT_REMOTE_ROOT}/assets" --max-depth 2
+
+      - name: 13 Check remote archetypes folder
+        run: |
+          rclone lsf "${FASHIONBOT_REMOTE_ROOT}/archetypes" --max-depth 2
+
+      - name: 14 Check remote job folder
+        run: |
+          rclone lsf "${FASHIONBOT_REMOTE_ROOT}/jobs/${FASHIONBOT_JOB_ID}" --max-depth 3
+
+      - name: 15 Run Fashionbot remote dry-run
+        if: ${{ inputs.execution_mode == 'dry_run' }}
+        working-directory: code
+        env:
+          FAL_KEY: ${{ secrets.FAL_KEY }}
+        run: |
+          python -m fashionbot.run "${FASHIONBOT_JOB_ID}" --remote --remote-root "${FASHIONBOT_REMOTE_ROOT}" --dry-run
+
+      - name: 16 Run Fashionbot remote real job
+        if: ${{ inputs.execution_mode == 'real' }}
+        working-directory: code
+        env:
+          FAL_KEY: ${{ secrets.FAL_KEY }}
+        run: |
+          python -m fashionbot.run "${FASHIONBOT_JOB_ID}" --remote --remote-root "${FASHIONBOT_REMOTE_ROOT}"
+
+      - name: 17 Show local job status
+        if: always()
+        run: |
+          if [ -f "jobs/${FASHIONBOT_JOB_ID}/status.json" ]; then
+            cat "jobs/${FASHIONBOT_JOB_ID}/status.json"
+          else
+            echo "No local status.json found"
+          fi
+
+      - name: 18 Show local output tree
+        if: always()
+        run: |
+          if [ -d "jobs/${FASHIONBOT_JOB_ID}" ]; then
+            find "jobs/${FASHIONBOT_JOB_ID}" -maxdepth 4 -type f | sort
+          else
+            echo "No local job folder found"
+          fi
+
+      - name: 19 Show remote job tree after run
+        if: always()
+        run: |
+          rclone lsf "${FASHIONBOT_REMOTE_ROOT}/jobs/${FASHIONBOT_JOB_ID}" --max-depth 4
+
+      - name: 20 Write GitHub summary
+        if: always()
+        run: |
+          {
+            echo "## Fashionbot Run"
+            echo ""
+            echo "- Job id: \`${FASHIONBOT_JOB_ID}\`"
+            echo "- Remote root: \`${FASHIONBOT_REMOTE_ROOT}\`"
+            echo "- Execution mode: \`${FASHIONBOT_EXECUTION_MODE}\`"
+            echo ""
+            echo "### Local Status"
+            echo ""
+            if [ -f "jobs/${FASHIONBOT_JOB_ID}/status.json" ]; then
+              echo '```json'
+              cat "jobs/${FASHIONBOT_JOB_ID}/status.json"
+              echo '```'
+            else
+              echo "No local status file was created."
+            fi
+            echo ""
+            echo "### Expected Drive Folder"
+            echo ""
+            echo "\`${FASHIONBOT_REMOTE_ROOT}/jobs/${FASHIONBOT_JOB_ID}\`"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: 21 Upload GitHub artifact backup
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fashionbot-job-${{ inputs.job_id }}
+          path: jobs/${{ inputs.job_id }}/
+          if-no-files-found: warn
+          retention-days: 7

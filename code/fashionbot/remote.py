@@ -19,8 +19,11 @@ def remote_join(root, *parts):
     return f"{remote}/{suffix}" if suffix else remote
 
 
-def run_rclone_copy(rclone_bin, source, destination, label):
+def run_rclone_copy(rclone_bin, source, destination, label, exclude=None):
     command = [rclone_bin, "copy", str(source), str(destination), "--progress"]
+    for pattern in exclude or []:
+        command.extend(["--exclude", pattern])
+
     print(f"\nREMOTE {label}")
     print("Command: " + " ".join(command))
 
@@ -36,23 +39,29 @@ def run_rclone_copy(rclone_bin, source, destination, label):
 
 
 def pull_remote_inputs(job_id, remote_root, jobs_root, archetypes_root, assets_root, rclone_bin):
+    common_excludes = [".DS_Store", "**/.DS_Store"]
+    job_excludes = common_excludes + ["outputs/normalized/**"]
+
     run_rclone_copy(
         rclone_bin,
         remote_join(remote_root, "assets"),
         assets_root,
         "PULL assets",
+        exclude=common_excludes,
     )
     run_rclone_copy(
         rclone_bin,
         remote_join(remote_root, "archetypes"),
         archetypes_root,
         "PULL archetypes",
+        exclude=common_excludes,
     )
     run_rclone_copy(
         rclone_bin,
         remote_join(remote_root, "jobs", job_id),
         Path(jobs_root) / str(job_id),
         "PULL job folder",
+        exclude=job_excludes,
     )
 
 
@@ -66,4 +75,9 @@ def push_remote_job(job_id, remote_root, jobs_root, rclone_bin):
         local_job,
         remote_join(remote_root, "jobs", job_id),
         "PUSH job folder",
+        exclude=[
+            ".DS_Store",
+            "**/.DS_Store",
+            "outputs/normalized/**",
+        ],
     )
