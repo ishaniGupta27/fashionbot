@@ -1,0 +1,16 @@
+{
+  "google_drive": {
+    "client_id": "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "client_secret": "YOUR_GOOGLE_OAUTH_CLIENT_SECRET",
+    "refresh_token": "YOUR_GOOGLE_REFRESH_TOKEN",
+    "root_path": "fashionbot"
+  },
+  "github": {
+    "owner": "ishaniGupta27",
+    "repo": "fashionbot",
+    "workflow": "run-fashionbot.yml",
+    "branch": "main",
+    "token": "YOUR_GITHUB_FINE_GRAINED_PAT_WITH_ACTIONS_WRITE"
+  },
+  "remote_root": "gdrive:fashionbot"
+}

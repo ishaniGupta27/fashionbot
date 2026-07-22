@@ -25,6 +25,9 @@ __pycache__/
 .pycache_tmp/
 .env
 code/.env
+fashionbot_submit_creds.json
+tools/*creds*.json
+tools/*.secret.json
 
 # Virtual environments
 venv/

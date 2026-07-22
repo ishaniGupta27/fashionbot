@@ -241,6 +241,27 @@ write GitHub summary
 upload short-lived artifact backup
 ```
 
+## Submit Tool
+
+For a known good laptop, a local curated job folder can be uploaded to Google
+Drive and submitted to GitHub Actions with:
+
+```bash
+python tools/submit_job.py \
+  --job-folder /path/to/2 \
+  --creds ~/fashionbot_submit_creds.json
+```
+
+The folder name must be numeric. `/path/to/2` becomes job id `2`.
+
+The submit tool uses Google Drive API for upload and GitHub API for workflow
+dispatch, so it does not require `rclone` or `gh` on the submit machine. See:
+
+```text
+tools/README.md
+tools/submit_job.example.json
+```
+
 ## Modes
 
 Fashionbot supports four modes.
