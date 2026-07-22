@@ -179,13 +179,22 @@ def mode_one_body_multiple_garments(job, dry_run=False):
     vto = vto_settings(job)
     reel = reel_settings(job)
 
-    original = relpath(job, inputs["original_image"], "inputs.original_image")
     garments_dir = relpath(job, inputs["garments_dir"], "inputs.garments_dir")
     model_path = resolve_archetype(
         models["archetype_id"],
         job.archetype_root,
         job.archetype_metadata_root,
     )
+    original_value = inputs.get("original_image")
+    if original_value:
+        original = relpath(job, original_value, "inputs.original_image")
+        print(f"Intro image: {original}")
+    else:
+        original = model_path
+        print(
+            "Intro image: inputs.original_image not provided; "
+            f"using archetype {models['archetype_id']} ({model_path})"
+        )
 
     normalized_original = normalize_image(
         original,

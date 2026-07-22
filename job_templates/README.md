@@ -20,3 +20,7 @@ job_templates/one_body_multiple_garments/
 
 Runtime jobs live in `jobs/` locally or in remote storage. The `jobs/` folder is
 not tracked in Git.
+
+In `one_body_multiple_garments`, `inputs.original_image` is optional. If it is
+not present in `job.json`, Fashionbot uses `models.archetype_id` as the intro
+image.

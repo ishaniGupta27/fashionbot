@@ -198,7 +198,8 @@ outputs/
 
 ### 4. `one_body_multiple_garments`
 
-One body/reference image introduces the reel. A single selected archetype/body
+One optional body/reference image introduces the reel. If that image is omitted,
+the selected archetype/body model introduces the reel. That same archetype/body
 model then wears many garments.
 
 This is currently one of the most important modes. It serves viewers who relate
@@ -208,7 +209,7 @@ ideas for that body.
 Example:
 
 ```text
-one body reference + body archetype 66
+optional body reference + body archetype 66
 -> baggy jeans, straight jeans, wide-leg jeans
 -> reel
 ```
@@ -219,12 +220,14 @@ Inputs:
 jobs/<job_id>/
   job.json
   inputs/
-    original.jpg
     garments/
       baggy-jeans.jpg
       straight-jeans.jpg
       wide-leg-jeans.jpg
 ```
+
+`inputs.original_image` can be provided for a separate intro/reference image. If
+it is missing, Fashionbot falls back to `models.archetype_id`.
 
 Model selection:
 

@@ -421,14 +421,14 @@ outputs/
 
 ### one_body_multiple_garments
 
-One original body/reference image, one known archetype/body model, and multiple
-new garment images.
+One known archetype/body model and multiple new garment images. An optional
+original body/reference image can introduce the reel; if omitted, Fashionbot
+uses the selected archetype image as the intro image.
 
 ```text
 jobs/69/
   job.json
   inputs/
-    original.jpg
     garments/
       slim-jeans.jpg
       wide-jeans.jpg
@@ -438,7 +438,6 @@ jobs/69/
 {
   "mode": "one_body_multiple_garments",
   "inputs": {
-    "original_image": "inputs/original.jpg",
     "garments_dir": "inputs/garments"
   },
   "models": {

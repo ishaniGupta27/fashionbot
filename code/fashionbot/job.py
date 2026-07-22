@@ -222,9 +222,10 @@ def validate_job(job):
         require_images(garments_dir, "inputs.garments_dir")
 
     if job.mode == MODE_ONE_BODY_MULTIPLE_GARMENTS:
-        original = relpath(job, inputs.get("original_image"), "inputs.original_image")
         garments_dir = relpath(job, inputs.get("garments_dir"), "inputs.garments_dir")
-        require_file(original, "inputs.original_image")
+        if inputs.get("original_image") is not None:
+            original = relpath(job, inputs.get("original_image"), "inputs.original_image")
+            require_file(original, "inputs.original_image")
         require_dir(garments_dir, "inputs.garments_dir")
         require_images(garments_dir, "inputs.garments_dir")
 

@@ -133,7 +133,7 @@ video.prompt
 `one_body_multiple_garments`:
 
 ```text
-inputs/original.jpg
+inputs/original.jpg optional; falls back to models.archetype_id image
 inputs/garments/
 models.archetype_id
 ```
