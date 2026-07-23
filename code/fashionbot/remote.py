@@ -3,6 +3,8 @@ import subprocess
 from pathlib import Path
 
 from .errors import FashionbotError
+from .secrets import secret_value
+from .settings import BASE_DIR
 
 
 def remote_root_from_env():
@@ -13,6 +15,25 @@ def rclone_bin_from_env():
     return os.environ.get("FASHIONBOT_RCLONE_BIN", "rclone")
 
 
+def configure_rclone_from_secret():
+    config_value = secret_value("RCLONE_CONFIG")
+    if not config_value:
+        return
+
+    possible_path = Path(config_value).expanduser()
+    if possible_path.is_file():
+        os.environ["RCLONE_CONFIG"] = str(possible_path)
+        return
+
+    if "[" not in config_value or "]" not in config_value:
+        return
+
+    config_path = BASE_DIR / ".fashionbot_runtime" / "rclone.conf"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(config_value)
+    os.environ["RCLONE_CONFIG"] = str(config_path)
+
+
 def remote_join(root, *parts):
     remote = str(root).rstrip("/")
     suffix = "/".join(str(part).strip("/") for part in parts if str(part).strip("/"))
@@ -20,6 +41,8 @@ def remote_join(root, *parts):
 
 
 def run_rclone_copy(rclone_bin, source, destination, label, exclude=None):
+    configure_rclone_from_secret()
+
     command = [rclone_bin, "copy", str(source), str(destination), "--progress"]
     for pattern in exclude or []:
         command.extend(["--exclude", pattern])

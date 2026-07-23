@@ -1,20 +1,13 @@
 from pathlib import Path
 
-from .env import load_dotenv_if_present
 from .errors import FashionbotError
 from .files import output_exists
+from .secrets import export_secret_to_env
 from .settings import DEFAULT_VIDEO_MODEL
 
 
 def ensure_fal_key():
-    import os
-
-    load_dotenv_if_present()
-    if "FAL_KEY" not in os.environ:
-        raise FashionbotError(
-            "FAL_KEY not found. Run: export FAL_KEY='your_key' "
-            "or add FAL_KEY=your_key to code/.env"
-        )
+    export_secret_to_env("FAL_KEY", required=True)
 
 
 def generate_video(
@@ -72,4 +65,3 @@ def generate_video(
         f.write(response.content)
 
     return output_path
-

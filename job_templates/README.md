@@ -24,3 +24,7 @@ not tracked in Git.
 In `one_body_multiple_garments`, `inputs.original_image` is optional. If it is
 not present in `job.json`, Fashionbot uses `models.archetype_id` as the intro
 image.
+
+Each template includes optional `metadata` and `youtube` sections. Keep
+`youtube.enabled` as `false` until the job should generate metadata or upload a
+private YouTube Short.

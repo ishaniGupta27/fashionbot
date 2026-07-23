@@ -20,6 +20,16 @@ on:
         options:
           - dry_run
           - real
+      generate_metadata:
+        description: "Generate YouTube Shorts metadata with OpenAI"
+        required: true
+        default: false
+        type: boolean
+      publish_youtube:
+        description: "Upload the reel as a private YouTube Short"
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -38,6 +48,8 @@ jobs:
       FASHIONBOT_REMOTE_ROOT: ${{ inputs.remote_root }}
       FASHIONBOT_JOB_ID: ${{ inputs.job_id }}
       FASHIONBOT_EXECUTION_MODE: ${{ inputs.execution_mode }}
+      FASHIONBOT_GENERATE_METADATA: ${{ inputs.generate_metadata }}
+      FASHIONBOT_PUBLISH_YOUTUBE: ${{ inputs.publish_youtube }}
 
     steps:
       - name: 01 Checkout repository
@@ -48,6 +60,8 @@ jobs:
           echo "Job id: ${FASHIONBOT_JOB_ID}"
           echo "Remote root: ${FASHIONBOT_REMOTE_ROOT}"
           echo "Execution mode: ${FASHIONBOT_EXECUTION_MODE}"
+          echo "Generate metadata: ${FASHIONBOT_GENERATE_METADATA}"
+          echo "Publish YouTube: ${FASHIONBOT_PUBLISH_YOUTUBE}"
           echo "Runner: ${RUNNER_OS}"
           echo "Workspace: ${GITHUB_WORKSPACE}"
 
@@ -108,6 +122,38 @@ jobs:
           fi
           echo "FAL_KEY is present"
 
+      - name: 10b Verify OpenAI secret for metadata
+        if: ${{ inputs.execution_mode == 'real' && inputs.generate_metadata }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "${OPENAI_API_KEY}" ]; then
+            echo "Missing required GitHub secret for metadata: OPENAI_API_KEY"
+            exit 1
+          fi
+          echo "OPENAI_API_KEY is present"
+
+      - name: 10c Verify YouTube secrets for publish
+        if: ${{ inputs.execution_mode == 'real' && inputs.publish_youtube }}
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          if [ -z "${YOUTUBE_CLIENT_ID}" ]; then
+            echo "Missing required GitHub secret for publish: YOUTUBE_CLIENT_ID"
+            exit 1
+          fi
+          if [ -z "${YOUTUBE_CLIENT_SECRET}" ]; then
+            echo "Missing required GitHub secret for publish: YOUTUBE_CLIENT_SECRET"
+            exit 1
+          fi
+          if [ -z "${YOUTUBE_REFRESH_TOKEN}" ]; then
+            echo "Missing required GitHub secret for publish: YOUTUBE_REFRESH_TOKEN"
+            exit 1
+          fi
+          echo "YouTube secrets are present"
+
       - name: 11 Check remote root
         run: |
           rclone lsd "${FASHIONBOT_REMOTE_ROOT}"
@@ -140,7 +186,34 @@ jobs:
         run: |
           python -m fashionbot.run "${FASHIONBOT_JOB_ID}" --remote --remote-root "${FASHIONBOT_REMOTE_ROOT}"
 
-      - name: 17 Show local job status
+      - name: 17 Generate YouTube Shorts metadata
+        if: ${{ inputs.execution_mode == 'real' && inputs.generate_metadata }}
+        working-directory: code
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python -m fashionbot.metadata "${FASHIONBOT_JOB_ID}"
+
+      - name: 18 Upload private YouTube Short
+        if: ${{ inputs.execution_mode == 'real' && inputs.publish_youtube }}
+        working-directory: code
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          python -m fashionbot.publish "${FASHIONBOT_JOB_ID}"
+
+      - name: 19 Push job folder after publish layer
+        if: ${{ always() && inputs.execution_mode == 'real' && (inputs.generate_metadata || inputs.publish_youtube) }}
+        run: |
+          if [ -d "jobs/${FASHIONBOT_JOB_ID}" ]; then
+            rclone copy "jobs/${FASHIONBOT_JOB_ID}" "${FASHIONBOT_REMOTE_ROOT}/jobs/${FASHIONBOT_JOB_ID}" --progress --exclude .DS_Store --exclude **/.DS_Store --exclude outputs/normalized/**
+          else
+            echo "No local job folder found to push"
+          fi
+
+      - name: 20 Show local job status
         if: always()
         run: |
           if [ -f "jobs/${FASHIONBOT_JOB_ID}/status.json" ]; then
@@ -149,7 +222,7 @@ jobs:
             echo "No local status.json found"
           fi
 
-      - name: 18 Show local output tree
+      - name: 21 Show local output tree
         if: always()
         run: |
           if [ -d "jobs/${FASHIONBOT_JOB_ID}" ]; then
@@ -158,12 +231,12 @@ jobs:
             echo "No local job folder found"
           fi
 
-      - name: 19 Show remote job tree after run
+      - name: 22 Show remote job tree after run
         if: always()
         run: |
           rclone lsf "${FASHIONBOT_REMOTE_ROOT}/jobs/${FASHIONBOT_JOB_ID}" --max-depth 4
 
-      - name: 20 Write GitHub summary
+      - name: 23 Write GitHub summary
         if: always()
         run: |
           {
@@ -172,6 +245,8 @@ jobs:
             echo "- Job id: \`${FASHIONBOT_JOB_ID}\`"
             echo "- Remote root: \`${FASHIONBOT_REMOTE_ROOT}\`"
             echo "- Execution mode: \`${FASHIONBOT_EXECUTION_MODE}\`"
+            echo "- Generate metadata: \`${FASHIONBOT_GENERATE_METADATA}\`"
+            echo "- Publish YouTube: \`${FASHIONBOT_PUBLISH_YOUTUBE}\`"
             echo ""
             echo "### Local Status"
             echo ""
@@ -186,9 +261,19 @@ jobs:
             echo "### Expected Drive Folder"
             echo ""
             echo "\`${FASHIONBOT_REMOTE_ROOT}/jobs/${FASHIONBOT_JOB_ID}\`"
+            echo ""
+            echo "### YouTube"
+            echo ""
+            if [ -f "jobs/${FASHIONBOT_JOB_ID}/outputs/youtube_upload.json" ]; then
+              echo '```json'
+              cat "jobs/${FASHIONBOT_JOB_ID}/outputs/youtube_upload.json"
+              echo '```'
+            else
+              echo "No YouTube upload result."
+            fi
           } >> "${GITHUB_STEP_SUMMARY}"
 
-      - name: 21 Upload GitHub artifact backup
+      - name: 24 Upload GitHub artifact backup
         if: always()
         uses: actions/upload-artifact@v4
         with:

@@ -25,5 +25,28 @@
     "result_duration": 1.5,
     "end_card_duration": 1.5,
     "show_result_name_labels": true
+  },
+  "metadata": {
+    "brand": "EveryBodyStyledOfficial",
+    "handle": "@everybodystyledofficial",
+    "theme": "date night looks",
+    "audience": "women looking for realistic outfit inspiration across body types",
+    "brand_voice": "warm, inclusive, confident, body-positive, stylish",
+    "extra_notes": [
+      "same body, multiple outfits",
+      "ask viewers which look matches their personality"
+    ]
+  },
+  "youtube": {
+    "enabled": false,
+    "upload_type": "short",
+    "privacy_status": "private",
+    "auto_generate_metadata": true,
+    "category_id": "26",
+    "made_for_kids": false,
+    "contains_synthetic_media": true,
+    "title": "",
+    "description": [],
+    "tags": []
   }
 }

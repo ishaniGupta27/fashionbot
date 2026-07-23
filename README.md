@@ -196,6 +196,8 @@ It is manually triggered from the GitHub Actions tab and accepts:
 job_id
 remote_root
 execution_mode
+generate_metadata
+publish_youtube
 ```
 
 Use this first:
@@ -213,6 +215,10 @@ Required GitHub repository secrets:
 ```text
 RCLONE_CONFIG
 FAL_KEY
+OPENAI_API_KEY
+YOUTUBE_CLIENT_ID
+YOUTUBE_CLIENT_SECRET
+YOUTUBE_REFRESH_TOKEN
 ```
 
 `RCLONE_CONFIG` should be the full contents of:
@@ -232,14 +238,109 @@ install Python dependencies
 verify Fashionbot imports
 write rclone config from secret
 verify FAL_KEY for real runs
+verify OPENAI_API_KEY when metadata is enabled
+verify YouTube secrets when publish is enabled
 check remote root/assets/archetypes/job
 run Fashionbot remote dry-run or real job
+generate YouTube Shorts metadata when enabled
+upload private YouTube Short when enabled
+push job folder back to Drive after metadata/publish
 show local status
 show local output tree
 show remote job tree
 write GitHub summary
 upload short-lived artifact backup
 ```
+
+## Secrets
+
+For local runs, secrets can be stored in:
+
+```text
+secrets/fashionbot.secrets.json
+```
+
+That file is ignored by Git. Use this committed example as the shape:
+
+```text
+secrets/fashionbot.secrets.example.json
+```
+
+The code reads the JSON file first. If a key is blank or missing, it falls back
+to the environment variable with the same name.
+
+```json
+{
+  "FAL_KEY": "",
+  "RCLONE_CONFIG": "",
+  "OPENAI_API_KEY": "",
+  "YOUTUBE_CLIENT_ID": "",
+  "YOUTUBE_CLIENT_SECRET": "",
+  "YOUTUBE_REFRESH_TOKEN": ""
+}
+```
+
+## YouTube Shorts Publishing
+
+Publishing is optional and is controlled by GitHub Actions flags. The generation
+pipeline stays unchanged.
+
+Add these sections to `job.json`:
+
+```json
+"metadata": {
+  "brand": "EveryBodyStyledOfficial",
+  "handle": "@everybodystyledofficial",
+  "theme": "date night looks",
+  "audience": "women looking for realistic outfit inspiration across body types",
+  "brand_voice": "warm, inclusive, confident, body-positive, stylish",
+  "extra_notes": [
+    "same body, multiple outfits",
+    "ask viewers which look matches their personality"
+  ]
+},
+"youtube": {
+  "enabled": true,
+  "upload_type": "short",
+  "privacy_status": "private",
+  "auto_generate_metadata": true,
+  "category_id": "26",
+  "made_for_kids": false,
+  "contains_synthetic_media": true,
+  "title": "",
+  "description": [],
+  "tags": []
+}
+```
+
+Commands:
+
+```bash
+cd /Users/Himanshu/Documents/fashionbot/code
+venv/bin/python -m fashionbot.metadata 69
+venv/bin/python -m fashionbot.publish 69
+```
+
+Metadata is saved to:
+
+```text
+jobs/<job_id>/outputs/youtube_metadata.json
+```
+
+Upload result is saved to:
+
+```text
+jobs/<job_id>/outputs/youtube_upload.json
+```
+
+Metadata and publish command logs are saved in:
+
+```text
+jobs/<job_id>/logs/
+```
+
+The publisher only uploads private Shorts. It refuses to upload unless the reel
+is an `.mp4`, exactly `1080x1920`, and `60` seconds or shorter.
 
 ## Submit Tool
 

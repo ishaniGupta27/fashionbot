@@ -2,9 +2,9 @@ from pathlib import Path
 
 from PIL import Image
 
-from .env import load_dotenv_if_present
 from .errors import FashionbotError, VTOContentPolicyError, VTOProviderError
 from .files import display_name, image_files, output_exists
+from .secrets import export_secret_to_env
 
 
 FASHN_MODEL_ID = "fal-ai/fashn/tryon/v1.5"
@@ -128,14 +128,7 @@ def build_tryon_arguments(model_url, garment_url, model, prompt):
 
 
 def ensure_fal_key():
-    import os
-
-    load_dotenv_if_present()
-    if "FAL_KEY" not in os.environ:
-        raise FashionbotError(
-            "FAL_KEY not found. Run: export FAL_KEY='your_key' "
-            "or add FAL_KEY=your_key to code/.env"
-        )
+    export_secret_to_env("FAL_KEY", required=True)
 
 
 def run_tryon_pair(

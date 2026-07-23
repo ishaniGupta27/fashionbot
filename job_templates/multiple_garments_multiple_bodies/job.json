@@ -21,5 +21,28 @@
     "intro_duration": 1.8,
     "result_duration": 1.0,
     "end_card_duration": 1.0
+  },
+  "metadata": {
+    "brand": "EveryBodyStyledOfficial",
+    "handle": "@everybodystyledofficial",
+    "theme": "multiple outfits across multiple bodies",
+    "audience": "women comparing outfit ideas across realistic body types",
+    "brand_voice": "warm, inclusive, confident, body-positive, stylish",
+    "extra_notes": [
+      "show how outfits change across bodies",
+      "ask viewers which look they would wear"
+    ]
+  },
+  "youtube": {
+    "enabled": false,
+    "upload_type": "short",
+    "privacy_status": "private",
+    "auto_generate_metadata": true,
+    "category_id": "26",
+    "made_for_kids": false,
+    "contains_synthetic_media": true,
+    "title": "",
+    "description": [],
+    "tags": []
   }
 }

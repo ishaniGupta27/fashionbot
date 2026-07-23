@@ -30,5 +30,28 @@
     "intro_duration": 1.8,
     "result_duration": 1.0,
     "end_card_duration": 1.0
+  },
+  "metadata": {
+    "brand": "EveryBodyStyledOfficial",
+    "handle": "@everybodystyledofficial",
+    "theme": "fashion video try-on",
+    "audience": "women looking for realistic outfit inspiration",
+    "brand_voice": "warm, inclusive, confident, body-positive, stylish",
+    "extra_notes": [
+      "single garment with subtle video movement",
+      "ask viewers if they would wear the look"
+    ]
+  },
+  "youtube": {
+    "enabled": false,
+    "upload_type": "short",
+    "privacy_status": "private",
+    "auto_generate_metadata": true,
+    "category_id": "26",
+    "made_for_kids": false,
+    "contains_synthetic_media": true,
+    "title": "",
+    "description": [],
+    "tags": []
   }
 }
