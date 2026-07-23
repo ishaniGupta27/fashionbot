@@ -154,6 +154,22 @@ jobs:
           fi
           echo "YouTube secrets are present"
 
+      - name: 10d Validate publish tokens
+        if: ${{ inputs.execution_mode == 'real' && (inputs.generate_metadata || inputs.publish_youtube) }}
+        working-directory: code
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          if [ "${FASHIONBOT_GENERATE_METADATA}" = "true" ]; then
+            python -m fashionbot.validate_secrets --openai
+          fi
+          if [ "${FASHIONBOT_PUBLISH_YOUTUBE}" = "true" ]; then
+            python -m fashionbot.validate_secrets --youtube
+          fi
+
       - name: 11 Check remote root
         run: |
           rclone lsd "${FASHIONBOT_REMOTE_ROOT}"

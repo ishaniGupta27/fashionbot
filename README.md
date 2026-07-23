@@ -321,6 +321,19 @@ venv/bin/python -m fashionbot.metadata 69
 venv/bin/python -m fashionbot.publish 69
 ```
 
+Validate tokens before publishing:
+
+```bash
+venv/bin/python -m fashionbot.validate_secrets --openai
+venv/bin/python -m fashionbot.validate_secrets --youtube
+```
+
+Full local preflight:
+
+```bash
+venv/bin/python -m fashionbot.validate_secrets --all --remote-root gdrive:fashionbot
+```
+
 Metadata is saved to:
 
 ```text
@@ -341,6 +354,12 @@ jobs/<job_id>/logs/
 
 The publisher only uploads private Shorts. It refuses to upload unless the reel
 is an `.mp4`, exactly `1080x1920`, and `60` seconds or shorter.
+
+Refresh token regeneration guide:
+
+```text
+docs/youtube_refresh_token_guide.md
+```
 
 ## Submit Tool
 
