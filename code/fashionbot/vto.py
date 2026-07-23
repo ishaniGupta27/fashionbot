@@ -13,6 +13,12 @@ DEFAULT_FLUX_PROMPT = "A natural front-facing studio shot. The garment is worn n
 OUTPUT_EXTENSION = ".jpg"
 MAX_UPLOAD_HEIGHT = 1024
 UPLOAD_JPEG_QUALITY = 90
+MODEL_FRAME_SCALE = 0.94
+MODEL_TOP_PADDING_RATIO = 0.055
+MODEL_FRAME_PROMPT = (
+    "Keep the full body centered with comfortable headroom above the hair "
+    "and visible feet. Do not crop the head or feet."
+)
 
 
 def build_fashn_arguments(model_url, garment_url):
@@ -53,16 +59,32 @@ def resize_for_vto(path, tmp_dir, prefix=""):
     return output_path
 
 
+def resize_model_for_vto(path, tmp_dir, prefix=""):
+    output_path = resize_for_vto(path, tmp_dir, prefix=prefix)
+    img = Image.open(output_path).convert("RGB")
+    background = img.getpixel((0, 0))
+    framed = Image.new("RGB", img.size, background)
+    new_size = (
+        int(img.width * MODEL_FRAME_SCALE),
+        int(img.height * MODEL_FRAME_SCALE),
+    )
+    resized = img.resize(new_size, Image.LANCZOS)
+    x = (img.width - resized.width) // 2
+    y = int(img.height * MODEL_TOP_PADDING_RATIO)
+    framed.paste(resized, (x, y))
+    framed.save(output_path, quality=UPLOAD_JPEG_QUALITY, optimize=True)
+    return output_path
+
+
 def prompt_for_garment(prompt, garment_path, append_garment_name=False):
-    if not append_garment_name:
-        return prompt
-
-    garment_name = display_name(garment_path)
-    if not garment_name:
-        return prompt
-
     base_prompt = prompt or DEFAULT_FLUX_PROMPT
-    return f"{base_prompt} Garment name: {garment_name}."
+
+    if append_garment_name:
+        garment_name = display_name(garment_path)
+        if garment_name:
+            base_prompt = f"{base_prompt} Garment name: {garment_name}."
+
+    return f"{base_prompt} {MODEL_FRAME_PROMPT}"
 
 
 def is_fal_auth_error(error):
@@ -151,7 +173,7 @@ def run_tryon_pair(
         ) from e
 
     resized_garment_path = resize_for_vto(garment_path, tmp_dir, prefix="garment_")
-    resized_model_path = resize_for_vto(model_path, tmp_dir, prefix="model_")
+    resized_model_path = resize_model_for_vto(model_path, tmp_dir, prefix="model_")
 
     try:
         garment_url = fal_client.upload_file(str(resized_garment_path))

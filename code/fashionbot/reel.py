@@ -41,7 +41,14 @@ def render_canvas(img):
     if img.size == (VIDEO_WIDTH, VIDEO_HEIGHT):
         return img
 
-    return img.resize((VIDEO_WIDTH, VIDEO_HEIGHT), Image.Resampling.LANCZOS)
+    scale = min(VIDEO_WIDTH / img.width, VIDEO_HEIGHT / img.height)
+    new_size = (int(img.width * scale), int(img.height * scale))
+    resized = img.resize(new_size, Image.Resampling.LANCZOS)
+    canvas = Image.new("RGB", (VIDEO_WIDTH, VIDEO_HEIGHT), (128, 128, 128))
+    x = (VIDEO_WIDTH - resized.width) // 2
+    y = (VIDEO_HEIGHT - resized.height) // 2
+    canvas.paste(resized, (x, y))
+    return canvas
 
 
 def label_from_name(name):
