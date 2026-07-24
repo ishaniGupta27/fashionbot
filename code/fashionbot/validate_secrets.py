@@ -5,7 +5,6 @@ import subprocess
 from .errors import FashionbotError
 from .remote import configure_rclone_from_secret, rclone_bin_from_env
 from .secrets import secret_value
-from .youtube import access_token
 
 
 def masked(value):
@@ -55,6 +54,8 @@ def validate_openai():
 
 
 def validate_youtube():
+    from .youtube import access_token
+
     require_present("YOUTUBE_CLIENT_ID")
     require_present("YOUTUBE_CLIENT_SECRET")
     require_present("YOUTUBE_REFRESH_TOKEN")
