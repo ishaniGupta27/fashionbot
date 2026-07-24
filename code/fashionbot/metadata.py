@@ -236,11 +236,23 @@ def generate_metadata(job, model=None, force=False):
         return output_path
 
     youtube = job.config.get("youtube", {})
-    if not isinstance(youtube, dict) or not youtube.get("enabled", False):
-        raise FashionbotError("youtube.enabled must be true to generate metadata")
+    if not isinstance(youtube, dict):
+        raise FashionbotError("youtube must be an object when provided")
 
-    if not youtube.get("auto_generate_metadata", False):
-        raise FashionbotError("youtube.auto_generate_metadata must be true")
+    instagram = job.config.get("instagram", {})
+    if not isinstance(instagram, dict):
+        raise FashionbotError("instagram must be an object when provided")
+
+    youtube_wants_metadata = youtube.get("enabled", False) and youtube.get(
+        "auto_generate_metadata", False
+    )
+    instagram_wants_metadata = instagram.get("enabled", False)
+
+    if not (youtube_wants_metadata or instagram_wants_metadata):
+        raise FashionbotError(
+            "Enable youtube.auto_generate_metadata (with youtube.enabled) or "
+            "instagram.enabled to generate metadata"
+        )
 
     api_key = secret_value("OPENAI_API_KEY", required=True)
     active_model = model or secret_value("OPENAI_MODEL") or DEFAULT_OPENAI_MODEL

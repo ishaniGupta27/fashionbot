@@ -30,6 +30,11 @@ on:
         required: true
         default: false
         type: boolean
+      publish_instagram:
+        description: "Publish the reel as an Instagram Reel (uses instagram.publish_mode in job.json)"
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -50,6 +55,7 @@ jobs:
       FASHIONBOT_EXECUTION_MODE: ${{ inputs.execution_mode }}
       FASHIONBOT_GENERATE_METADATA: ${{ inputs.generate_metadata }}
       FASHIONBOT_PUBLISH_YOUTUBE: ${{ inputs.publish_youtube }}
+      FASHIONBOT_PUBLISH_INSTAGRAM: ${{ inputs.publish_instagram }}
 
     steps:
       - name: 01 Checkout repository
@@ -62,6 +68,7 @@ jobs:
           echo "Execution mode: ${FASHIONBOT_EXECUTION_MODE}"
           echo "Generate metadata: ${FASHIONBOT_GENERATE_METADATA}"
           echo "Publish YouTube: ${FASHIONBOT_PUBLISH_YOUTUBE}"
+          echo "Publish Instagram: ${FASHIONBOT_PUBLISH_INSTAGRAM}"
           echo "Runner: ${RUNNER_OS}"
           echo "Workspace: ${GITHUB_WORKSPACE}"
 
@@ -123,7 +130,7 @@ jobs:
           echo "FAL_KEY is present"
 
       - name: 10b Verify OpenAI secret for metadata
-        if: ${{ inputs.execution_mode == 'real' && inputs.generate_metadata }}
+        if: ${{ inputs.execution_mode == 'real' && (inputs.generate_metadata || inputs.publish_instagram) }}
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
@@ -154,20 +161,41 @@ jobs:
           fi
           echo "YouTube secrets are present"
 
+      - name: 10c2 Verify Instagram secrets for publish
+        if: ${{ inputs.execution_mode == 'real' && inputs.publish_instagram }}
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+        run: |
+          if [ -z "${INSTAGRAM_ACCESS_TOKEN}" ]; then
+            echo "Missing required GitHub secret for publish: INSTAGRAM_ACCESS_TOKEN"
+            exit 1
+          fi
+          if [ -z "${INSTAGRAM_USER_ID}" ]; then
+            echo "Missing required GitHub secret for publish: INSTAGRAM_USER_ID"
+            exit 1
+          fi
+          echo "Instagram secrets are present"
+
       - name: 10d Validate publish tokens
-        if: ${{ inputs.execution_mode == 'real' && (inputs.generate_metadata || inputs.publish_youtube) }}
+        if: ${{ inputs.execution_mode == 'real' && (inputs.generate_metadata || inputs.publish_youtube || inputs.publish_instagram) }}
         working-directory: code
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
         run: |
-          if [ "${FASHIONBOT_GENERATE_METADATA}" = "true" ]; then
+          if [ "${FASHIONBOT_GENERATE_METADATA}" = "true" ] || [ "${FASHIONBOT_PUBLISH_INSTAGRAM}" = "true" ]; then
             python -m fashionbot.validate_secrets --openai
           fi
           if [ "${FASHIONBOT_PUBLISH_YOUTUBE}" = "true" ]; then
             python -m fashionbot.validate_secrets --youtube
+          fi
+          if [ "${FASHIONBOT_PUBLISH_INSTAGRAM}" = "true" ]; then
+            python -m fashionbot.validate_secrets --instagram
           fi
 
       - name: 11 Check remote root
@@ -202,8 +230,8 @@ jobs:
         run: |
           python -m fashionbot.run "${FASHIONBOT_JOB_ID}" --remote --remote-root "${FASHIONBOT_REMOTE_ROOT}"
 
-      - name: 17 Generate YouTube Shorts metadata
-        if: ${{ inputs.execution_mode == 'real' && inputs.generate_metadata }}
+      - name: 17 Generate Shorts/Reel metadata
+        if: ${{ inputs.execution_mode == 'real' && (inputs.generate_metadata || inputs.publish_instagram) }}
         working-directory: code
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -220,8 +248,17 @@ jobs:
         run: |
           python -m fashionbot.publish "${FASHIONBOT_JOB_ID}"
 
+      - name: 18b Publish Instagram Reel
+        if: ${{ inputs.execution_mode == 'real' && inputs.publish_instagram }}
+        working-directory: code
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+        run: |
+          python -m fashionbot.publish_instagram "${FASHIONBOT_JOB_ID}"
+
       - name: 19 Push job folder after publish layer
-        if: ${{ always() && inputs.execution_mode == 'real' && (inputs.generate_metadata || inputs.publish_youtube) }}
+        if: ${{ always() && inputs.execution_mode == 'real' && (inputs.generate_metadata || inputs.publish_youtube || inputs.publish_instagram) }}
         run: |
           if [ -d "jobs/${FASHIONBOT_JOB_ID}" ]; then
             rclone copy "jobs/${FASHIONBOT_JOB_ID}" "${FASHIONBOT_REMOTE_ROOT}/jobs/${FASHIONBOT_JOB_ID}" --progress --exclude .DS_Store --exclude **/.DS_Store --exclude outputs/normalized/**
@@ -263,6 +300,7 @@ jobs:
             echo "- Execution mode: \`${FASHIONBOT_EXECUTION_MODE}\`"
             echo "- Generate metadata: \`${FASHIONBOT_GENERATE_METADATA}\`"
             echo "- Publish YouTube: \`${FASHIONBOT_PUBLISH_YOUTUBE}\`"
+            echo "- Publish Instagram: \`${FASHIONBOT_PUBLISH_INSTAGRAM}\`"
             echo ""
             echo "### Local Status"
             echo ""
@@ -286,6 +324,16 @@ jobs:
               echo '```'
             else
               echo "No YouTube upload result."
+            fi
+            echo ""
+            echo "### Instagram"
+            echo ""
+            if [ -f "jobs/${FASHIONBOT_JOB_ID}/outputs/instagram_upload.json" ]; then
+              echo '```json'
+              cat "jobs/${FASHIONBOT_JOB_ID}/outputs/instagram_upload.json"
+              echo '```'
+            else
+              echo "No Instagram publish result."
             fi
           } >> "${GITHUB_STEP_SUMMARY}"
 

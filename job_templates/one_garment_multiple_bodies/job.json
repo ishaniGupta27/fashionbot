@@ -44,5 +44,12 @@
     "title": "",
     "description": [],
     "tags": []
+  },
+  "instagram": {
+    "enabled": false,
+    "publish_mode": "container_only",
+    "caption": null,
+    "hashtags": [],
+    "video_url": null
   }
 }

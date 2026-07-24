@@ -61,6 +61,34 @@ def run_rclone_copy(rclone_bin, source, destination, label, exclude=None):
         raise FashionbotError(f"rclone failed while {label.lower()}") from e
 
 
+def rclone_public_link(rclone_bin, remote_path):
+    configure_rclone_from_secret()
+
+    command = [rclone_bin, "link", str(remote_path)]
+    print("\nREMOTE PUBLIC LINK")
+    print("Command: " + " ".join(command))
+
+    try:
+        result = subprocess.run(
+            command, check=True, capture_output=True, text=True
+        )
+    except FileNotFoundError as e:
+        raise FashionbotError(
+            "rclone was not found. Install rclone or set FASHIONBOT_RCLONE_BIN "
+            "to the full rclone path."
+        ) from e
+    except subprocess.CalledProcessError as e:
+        detail = (e.stderr or "").strip()
+        raise FashionbotError(
+            f"rclone failed to create a public link for {remote_path}: {detail}"
+        ) from e
+
+    link = (result.stdout or "").strip()
+    if not link:
+        raise FashionbotError(f"rclone link returned no URL for {remote_path}")
+    return link
+
+
 def pull_remote_inputs(job_id, remote_root, jobs_root, archetypes_root, assets_root, rclone_bin):
     common_excludes = [".DS_Store", "**/.DS_Store"]
     job_excludes = common_excludes + ["outputs/normalized/**"]

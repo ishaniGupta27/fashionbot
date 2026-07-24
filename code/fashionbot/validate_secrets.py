@@ -63,6 +63,27 @@ def validate_youtube():
     print(f"OK YouTube refresh token exchanged: {masked(token)}")
 
 
+def validate_instagram():
+    import requests
+
+    token = require_present("INSTAGRAM_ACCESS_TOKEN")
+    ig_user_id = require_present("INSTAGRAM_USER_ID")
+
+    version = os.environ.get("IG_GRAPH_VERSION") or "v21.0"
+    response = requests.get(
+        f"https://graph.facebook.com/{version}/{ig_user_id}",
+        params={"fields": "username", "access_token": token},
+        timeout=60,
+    )
+    if response.status_code >= 400:
+        raise FashionbotError(
+            f"Instagram validation failed: HTTP {response.status_code}: "
+            f"{response.text[:500]}"
+        )
+    username = response.json().get("username")
+    print(f"OK Instagram token validated for account: @{username}")
+
+
 def validate_fal():
     require_present("FAL_KEY")
     print("OK FAL_KEY present")
@@ -94,13 +115,18 @@ def main(argv=None):
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Validate OpenAI, YouTube, fal.ai presence, and rclone.",
+        help="Validate OpenAI, YouTube, Instagram, fal.ai presence, and rclone.",
     )
     parser.add_argument("--openai", action="store_true", help="Validate OPENAI_API_KEY")
     parser.add_argument(
         "--youtube",
         action="store_true",
         help="Validate YouTube client id/secret/refresh token.",
+    )
+    parser.add_argument(
+        "--instagram",
+        action="store_true",
+        help="Validate INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_USER_ID.",
     )
     parser.add_argument("--fal", action="store_true", help="Validate FAL_KEY presence")
     parser.add_argument(
@@ -115,7 +141,7 @@ def main(argv=None):
     )
 
     args = parser.parse_args(argv)
-    if not any([args.all, args.openai, args.youtube, args.fal, args.rclone]):
+    if not any([args.all, args.openai, args.youtube, args.instagram, args.fal, args.rclone]):
         args.openai = True
         args.youtube = True
 
@@ -124,6 +150,8 @@ def main(argv=None):
             validate_openai()
         if args.all or args.youtube:
             validate_youtube()
+        if args.all or args.instagram:
+            validate_instagram()
         if args.all or args.fal:
             validate_fal()
         if args.all or args.rclone:

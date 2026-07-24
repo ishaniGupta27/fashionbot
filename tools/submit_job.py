@@ -353,7 +353,7 @@ class GitHubClient:
             "X-GitHub-Api-Version": "2026-03-10",
         }
 
-    def dispatch_workflow(self, job_id, remote_root, execution_mode):
+    def dispatch_workflow(self, job_id, remote_root, execution_mode, publish_instagram=False):
         self.logger.section("GITHUB ACTIONS DISPATCH")
         url = (
             f"{GITHUB_API}/repos/{self.owner}/{self.repo}/actions/workflows/"
@@ -365,12 +365,16 @@ class GitHubClient:
                 "job_id": job_id,
                 "remote_root": remote_root,
                 "execution_mode": execution_mode,
+                "publish_instagram": "true" if publish_instagram else "false",
             },
         }
         self.logger.line(f"Repository: {self.owner}/{self.repo}")
         self.logger.line(f"Workflow: {self.workflow}")
         self.logger.line(f"Branch: {self.branch}")
-        self.logger.line(f"Inputs: job_id={job_id}, remote_root={remote_root}, execution_mode={execution_mode}")
+        self.logger.line(
+            f"Inputs: job_id={job_id}, remote_root={remote_root}, "
+            f"execution_mode={execution_mode}, publish_instagram={publish_instagram}"
+        )
 
         requests = requests_module()
         response = requests.post(url, headers=self.headers(), json=payload, timeout=60)
@@ -427,6 +431,11 @@ def parse_args(argv):
         help="Shortcut for --execution-mode real.",
     )
     parser.add_argument(
+        "--publish-instagram",
+        action="store_true",
+        help="Set publish_instagram=true on the workflow dispatch.",
+    )
+    parser.add_argument(
         "--remote-root",
         default=None,
         help="Override remote_root workflow input, for example gdrive:fashionbot.",
@@ -461,6 +470,7 @@ def main(argv=None):
         logger.line(f"Job folder: {job_folder}")
         logger.line(f"Job id: {job_id}")
         logger.line(f"Execution mode: {execution_mode}")
+        logger.line(f"Publish Instagram: {args.publish_instagram}")
         logger.line(f"Submit log: {log_path}")
 
         creds = load_json(Path(args.creds).expanduser(), "creds")
@@ -483,7 +493,9 @@ def main(argv=None):
         github = GitHubClient(github_config, logger)
 
         drive.upload_job_folder(job_folder, job_id)
-        workflow_url = github.dispatch_workflow(job_id, remote_root, execution_mode)
+        workflow_url = github.dispatch_workflow(
+            job_id, remote_root, execution_mode, args.publish_instagram
+        )
 
         logger.section("UPLOAD SUBMIT LOG")
         root_id = drive.root_folder_id()
