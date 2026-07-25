@@ -43,6 +43,11 @@ def main(argv=None):
         help="Skip fal.ai calls and create local mock outputs.",
     )
     parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Rebuild the reel even if reel.mp4 already exists (e.g. pulled from remote).",
+    )
+    parser.add_argument(
         "--remote",
         action="store_true",
         help="Pull assets/archetypes/job from remote storage and push the job back.",
@@ -107,7 +112,7 @@ def main(argv=None):
                 active_archetypes_dir,
                 active_archetype_metadata_dir,
             )
-            outputs = run_job(job, dry_run=args.dry_run)
+            outputs = run_job(job, dry_run=args.dry_run, force=args.force)
         except FashionbotError as e:
             print(f"\nERROR: {e}", file=sys.stderr)
             return_code = 1

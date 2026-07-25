@@ -305,7 +305,7 @@ MODE_HANDLERS = {
 }
 
 
-def run_job(job, dry_run=False):
+def run_job(job, dry_run=False, force=False):
     job.outputs_dir.mkdir(parents=True, exist_ok=True)
     job.logs_dir.mkdir(parents=True, exist_ok=True)
     write_status(job, "running", dry_run=dry_run)
@@ -321,6 +321,17 @@ def run_job(job, dry_run=False):
     handler = MODE_HANDLERS.get(job.mode)
     if handler is None:
         raise FashionbotError(f"Unsupported mode: {job.mode}")
+
+    reel_path = job.outputs_dir / "reel.mp4"
+    if not force and not dry_run and reel_path.is_file():
+        log_section("SKIPPED (reel already exists)")
+        print(
+            f"Reusing existing reel: {reel_path}\n"
+            "Pass --force to rebuild the VTO and reel."
+        )
+        outputs = {"reel": str(reel_path), "reel_cached": True}
+        write_status(job, "done", dry_run=dry_run, outputs=outputs)
+        return outputs
 
     try:
         outputs = handler(job, dry_run=dry_run)
