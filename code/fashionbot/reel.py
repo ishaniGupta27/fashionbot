@@ -12,7 +12,14 @@ from moviepy import (
 )
 from PIL import Image, ImageDraw
 
-from .files import display_name, image_files, media_files, resolve_audio_file, resolve_image_file
+from .files import (
+    check_image,
+    display_name,
+    image_files,
+    media_files,
+    resolve_audio_file,
+    resolve_image_file,
+)
 from .fonts import bold_font
 from .settings import (
     DEFAULT_AUDIO,
@@ -31,6 +38,20 @@ from .settings import (
 FEATURED_VIDEO_SPEED = 0.75
 TEXT_LAYOUT_DEFAULT = "default"
 TEXT_LAYOUT_BODY_TYPE = "body_type"
+
+
+def usable_result_files(results_dir):
+    files = []
+    for result_file in media_files(results_dir):
+        if result_file.suffix.lower() in VIDEO_EXTENSIONS:
+            files.append(result_file)
+            continue
+        reason = check_image(result_file)
+        if reason:
+            print(f"SKIP bad image at stitch time ({reason}): {result_file.name}")
+            continue
+        files.append(result_file)
+    return files
 
 
 def get_font(size):
@@ -278,7 +299,7 @@ def add_flat_result_clips(
         )
     )
 
-    result_files = media_files(results_dir)
+    result_files = usable_result_files(results_dir)
     random.shuffle(result_files)
 
     for result_file in result_files:
@@ -302,7 +323,7 @@ def add_grouped_garment_clips(
     original_image_credit=None,
     result_duration=DEFAULT_RESULT_DURATION,
 ):
-    result_files = media_files(results_dir)
+    result_files = usable_result_files(results_dir)
 
     for garment_path in image_files(garments_dir):
         garment_label = label_from_name(garment_path.stem)

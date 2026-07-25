@@ -2,8 +2,13 @@ from pathlib import Path
 
 from PIL import Image
 
-from .errors import FashionbotError, VTOContentPolicyError, VTOProviderError
-from .files import display_name, image_files, output_exists
+from .errors import (
+    FashionbotError,
+    VTOContentPolicyError,
+    VTOInvalidImageError,
+    VTOProviderError,
+)
+from .files import check_image, display_name, image_files, output_exists
 from .secrets import export_secret_to_env
 
 
@@ -199,6 +204,10 @@ def run_tryon_pair(
             ) from e
         raise VTOProviderError(f"fal.ai VTO request failed: {clean_provider_message(e)}") from e
 
+    reason = check_image(response.content)
+    if reason:
+        raise VTOInvalidImageError(reason)
+
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("wb") as f:
@@ -239,6 +248,9 @@ def one_garment_to_many_bodies(
             print(f"SKIP content policy: {Path(model_path).name}")
             print(f"Reason: {e}")
             skipped.append({"model": Path(model_path).name, "reason": str(e)})
+        except VTOInvalidImageError as e:
+            print(f"SKIP bad image ({e}): {Path(model_path).name}")
+            skipped.append({"model": Path(model_path).name, "reason": f"bad image: {e}"})
 
     return skipped
 
@@ -277,6 +289,9 @@ def many_garments_to_one_body(
             print(f"SKIP content policy: {garment_path.name}")
             print(f"Reason: {e}")
             skipped.append({"garment": garment_path.name, "reason": str(e)})
+        except VTOInvalidImageError as e:
+            print(f"SKIP bad image ({e}): {garment_path.name}")
+            skipped.append({"garment": garment_path.name, "reason": f"bad image: {e}"})
 
     return skipped
 
@@ -321,6 +336,13 @@ def many_garments_to_many_bodies(
                     "garment": garment_path.name,
                     "model": Path(model_path).name,
                     "reason": str(e),
+                })
+            except VTOInvalidImageError as e:
+                print(f"SKIP bad image ({e}): {garment_path.name} on {Path(model_path).name}")
+                skipped.append({
+                    "garment": garment_path.name,
+                    "model": Path(model_path).name,
+                    "reason": f"bad image: {e}",
                 })
 
     return skipped

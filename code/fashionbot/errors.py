@@ -8,3 +8,7 @@ class VTOContentPolicyError(FashionbotError):
 
 class VTOProviderError(FashionbotError):
     """A provider failed a VTO call for a non-recoverable reason."""
+
+
+class VTOInvalidImageError(FashionbotError):
+    """A generated VTO image failed a sanity check and was skipped."""
