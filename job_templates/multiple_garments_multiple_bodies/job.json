@@ -33,6 +33,17 @@
       "ask viewers which look they would wear"
     ]
   },
+  "intro_slide": {
+    "enabled": false,
+    "auto_generate_background": true,
+    "title": "Outfit Ideas",
+    "subtitle": "Across realistic body types",
+    "style_notes": [
+      "soft editorial title slide",
+      "quiet luxury palette",
+      "minimal, readable typography"
+    ]
+  },
   "youtube": {
     "enabled": false,
     "upload_type": "short",

@@ -42,6 +42,17 @@
       "ask viewers if they would wear the look"
     ]
   },
+  "intro_slide": {
+    "enabled": false,
+    "auto_generate_background": true,
+    "title": "Fashion Try-On",
+    "subtitle": "A soft editorial outfit moment",
+    "style_notes": [
+      "soft editorial title slide",
+      "quiet luxury palette",
+      "minimal, readable typography"
+    ]
+  },
   "youtube": {
     "enabled": false,
     "upload_type": "short",

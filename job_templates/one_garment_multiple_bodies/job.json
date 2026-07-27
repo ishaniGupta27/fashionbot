@@ -33,6 +33,17 @@
       "ask viewers which version helps them imagine the outfit"
     ]
   },
+  "intro_slide": {
+    "enabled": false,
+    "auto_generate_background": true,
+    "title": "One Outfit",
+    "subtitle": "Styled across different bodies",
+    "style_notes": [
+      "soft editorial title slide",
+      "quiet luxury palette",
+      "minimal, readable typography"
+    ]
+  },
   "youtube": {
     "enabled": false,
     "upload_type": "short",

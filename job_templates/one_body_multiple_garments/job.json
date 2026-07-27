@@ -37,6 +37,17 @@
       "ask viewers which look matches their personality"
     ]
   },
+  "intro_slide": {
+    "enabled": false,
+    "auto_generate_background": true,
+    "title": "Date Night Looks",
+    "subtitle": "Reimagined for every body",
+    "style_notes": [
+      "soft editorial title slide",
+      "quiet luxury palette",
+      "minimal, readable typography"
+    ]
+  },
   "youtube": {
     "enabled": false,
     "upload_type": "short",

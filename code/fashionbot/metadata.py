@@ -4,6 +4,7 @@ import json
 from .errors import FashionbotError
 from .files import display_name, image_files
 from .job import load_job, prompt_text
+from .openai_response import extract_response_text, parse_json_text
 from .runlog import run_log_path, tee_to_log
 from .secrets import secret_value
 from .settings import (
@@ -120,33 +121,6 @@ def validate_metadata(payload):
     }
 
 
-def extract_response_text(response_json):
-    if response_json.get("output_text"):
-        return response_json["output_text"]
-
-    chunks = []
-    for item in response_json.get("output", []):
-        for content in item.get("content", []):
-            text = content.get("text")
-            if text:
-                chunks.append(text)
-
-    return "\n".join(chunks).strip()
-
-
-def parse_json_text(text):
-    text = text.strip()
-    if text.startswith("```"):
-        text = text.strip("`").strip()
-        if text.startswith("json"):
-            text = text[len("json") :].strip()
-
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError as e:
-        raise FashionbotError(f"OpenAI returned invalid metadata JSON: {e}") from e
-
-
 def job_garment_names(job):
     inputs = job.config.get("inputs", {})
     names = []
@@ -222,11 +196,8 @@ def call_openai(context, model, api_key):
             f"{response.text[:500]}"
         )
 
-    text = extract_response_text(response.json())
-    if not text:
-        raise FashionbotError("OpenAI metadata response did not contain text")
-
-    return parse_json_text(text)
+    text = extract_response_text(response.json(), label="OpenAI metadata response")
+    return parse_json_text(text, label="OpenAI metadata")
 
 
 def generate_metadata(job, model=None, force=False):

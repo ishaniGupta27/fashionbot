@@ -139,6 +139,38 @@ def positive_duration(value, label):
     return duration
 
 
+def validate_intro_slide(config):
+    intro_slide = config.get("intro_slide", {})
+    if not isinstance(intro_slide, dict):
+        raise FashionbotError("intro_slide must be an object when provided")
+
+    if not intro_slide.get("enabled", False):
+        return
+
+    title = intro_slide.get("title")
+    if not isinstance(title, str) or not title.strip():
+        raise FashionbotError("intro_slide.title is required when intro_slide.enabled is true")
+
+    subtitle = intro_slide.get("subtitle", "")
+    if subtitle is not None and not isinstance(subtitle, str):
+        raise FashionbotError("intro_slide.subtitle must be a string")
+
+    if "auto_generate_background" in intro_slide and not isinstance(
+        intro_slide["auto_generate_background"], bool
+    ):
+        raise FashionbotError("intro_slide.auto_generate_background must be true or false")
+
+    style_notes = intro_slide.get("style_notes", [])
+    if not isinstance(style_notes, list) or not all(
+        isinstance(item, str) for item in style_notes
+    ):
+        raise FashionbotError("intro_slide.style_notes must be a list of strings")
+
+    metadata = config.get("metadata", {})
+    if not isinstance(metadata, dict):
+        raise FashionbotError("metadata must be an object when intro_slide is enabled")
+
+
 def reel_duration(job, key):
     defaults = {
         "intro_duration": (
@@ -196,6 +228,7 @@ def validate_job(job):
         raise FashionbotError("reel must be an object when provided")
 
     validate_models(job, models)
+    validate_intro_slide(job.config)
     prompt_text(vto.get("prompt"), "vto.prompt")
 
     if vto.get("model", DEFAULT_VTO_MODEL) not in ("fash", "flux"):

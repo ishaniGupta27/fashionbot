@@ -9,6 +9,7 @@ from .dry_run import (
 )
 from .errors import FashionbotError
 from .files import ensure_clean_image_dir, image_files
+from .intro_slide import generate_intro_slide
 from .job import prompt_text, reel_duration, relpath
 from .normalize import normalize_image
 from .reel import build_reel
@@ -61,6 +62,16 @@ def reel_settings(job):
     }
 
 
+def intro_slide_settings(job):
+    intro_slide = job.config.get("intro_slide", {})
+    return {
+        "enabled": bool(intro_slide.get("enabled", False))
+        if isinstance(intro_slide, dict)
+        else False,
+        "title": intro_slide.get("title") if isinstance(intro_slide, dict) else None,
+    }
+
+
 def normalized_single_path(job, name):
     return job.outputs_dir / "normalized" / name
 
@@ -85,6 +96,18 @@ def normalize_garment_folder(job, garments_dir):
         normalize_image(garment_path, output_path)
 
     return output_dir
+
+
+def intro_image_for_reel(job, default_intro, reel, dry_run=False):
+    intro_slide = generate_intro_slide(job, dry_run=dry_run)
+    if intro_slide:
+        return intro_slide, None, None
+
+    return (
+        default_intro,
+        reel["original_image_description"],
+        reel["original_image_credit"],
+    )
 
 
 def mode_one_garment_multiple_bodies(job, dry_run=False):
@@ -116,13 +139,20 @@ def mode_one_garment_multiple_bodies(job, dry_run=False):
             append_garment_name=vto["append_garment_name"],
         )
 
+    intro_image, intro_description, intro_credit = intro_image_for_reel(
+        job,
+        normalized_garment,
+        reel,
+        dry_run=dry_run,
+    )
+
     reel_path = job.outputs_dir / "reel.mp4"
     build_reel(
-        normalized_garment,
+        intro_image,
         vto_dir,
         reel_path,
-        original_image_description=reel["original_image_description"],
-        original_image_credit=reel["original_image_credit"],
+        original_image_description=intro_description,
+        original_image_credit=intro_credit,
         intro_duration=reel["intro_duration"],
         result_duration=reel["result_duration"],
         end_card_duration=reel["end_card_duration"],
@@ -217,13 +247,20 @@ def mode_one_body_multiple_garments(job, dry_run=False):
             append_garment_name=vto["append_garment_name"],
         )
 
+    intro_image, intro_description, intro_credit = intro_image_for_reel(
+        job,
+        normalized_original,
+        reel,
+        dry_run=dry_run,
+    )
+
     reel_path = job.outputs_dir / "reel.mp4"
     build_reel(
-        normalized_original,
+        intro_image,
         vto_dir,
         reel_path,
-        original_image_description=reel["original_image_description"],
-        original_image_credit=reel["original_image_credit"],
+        original_image_description=intro_description,
+        original_image_credit=intro_credit,
         body_type_intro=True,
         result_name_labels=reel["show_result_name_labels"],
         intro_duration=reel["intro_duration"],
@@ -281,15 +318,22 @@ def mode_video(job, dry_run=False):
             cfg_scale=video.get("cfg_scale"),
         )
 
+    intro_image, intro_description, intro_credit = intro_image_for_reel(
+        job,
+        normalized_garment,
+        reel,
+        dry_run=dry_run,
+    )
+
     reel_path = job.outputs_dir / "reel.mp4"
     build_reel(
-        normalized_garment,
+        intro_image,
         vto_dir,
         reel_path,
         featured_image=vto_image,
         featured_video=video_path,
-        original_image_description=reel["original_image_description"],
-        original_image_credit=reel["original_image_credit"],
+        original_image_description=intro_description,
+        original_image_credit=intro_credit,
         intro_duration=reel["intro_duration"],
         result_duration=reel["result_duration"],
         end_card_duration=reel["end_card_duration"],
@@ -317,6 +361,10 @@ def run_job(job, dry_run=False, force=False):
     log_kv("Archetype folder", job.archetype_root)
     log_kv("Archetype metadata", job.archetype_metadata_root)
     log_kv("Dry run", dry_run)
+    intro = intro_slide_settings(job)
+    log_kv("Intro slide enabled", intro["enabled"])
+    if intro["enabled"]:
+        log_kv("Intro slide title", intro["title"])
 
     handler = MODE_HANDLERS.get(job.mode)
     if handler is None:

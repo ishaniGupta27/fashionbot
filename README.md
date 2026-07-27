@@ -361,6 +361,50 @@ Refresh token regeneration guide:
 docs/youtube_refresh_token_guide.md
 ```
 
+## Generated Intro Slide
+
+Jobs can replace the first reel image with a generated editorial title slide.
+The `metadata` section is used as the creative brief for the background. The
+explicit `intro_slide.title` and `intro_slide.subtitle` are rendered on top with
+PIL so the text stays readable and consistent.
+
+```json
+"metadata": {
+  "brand": "EveryBodyStyledOfficial",
+  "handle": "@everybodystyledofficial",
+  "theme": "soft feminine quiet luxury color combinations",
+  "audience": "women looking to build elegant, feminine outfits with timeless color palettes",
+  "brand_voice": "warm, inclusive, confident, body-positive, stylish",
+  "extra_notes": [
+    "Focus on elegant, soft, low-saturation color palettes rather than bright or trendy colors.",
+    "Show how the same outfit silhouette transforms with different color combinations.",
+    "Keep styling minimal and sophisticated to let the colors stand out."
+  ]
+},
+"intro_slide": {
+  "enabled": true,
+  "auto_generate_background": true,
+  "title": "Soft Feminine Color Palettes",
+  "subtitle": "Quiet luxury combinations for everyday outfits",
+  "style_notes": [
+    "soft editorial title slide",
+    "minimal, sophisticated, low-saturation background",
+    "keep title and subtitle highly readable"
+  ]
+}
+```
+
+Outputs:
+
+```text
+jobs/<job_id>/outputs/intro_slide.jpg
+jobs/<job_id>/outputs/intro_slide_spec.json
+```
+
+`intro_slide.auto_generate_background: true` uses OpenAI to create the color and
+background design spec. In dry-run mode, Fashionbot uses a local fallback spec
+instead of calling OpenAI.
+
 ## Submit Tool
 
 For a known good laptop, a local curated job folder can be uploaded to Google

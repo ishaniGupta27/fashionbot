@@ -71,6 +71,8 @@ jobs:
           echo "Publish Instagram: ${FASHIONBOT_PUBLISH_INSTAGRAM}"
           echo "Runner: ${RUNNER_OS}"
           echo "Workspace: ${GITHUB_WORKSPACE}"
+          echo "Git commit: ${GITHUB_SHA}"
+          git rev-parse --short HEAD
 
       - name: 03 Set up Python
         uses: actions/setup-python@v6
@@ -130,12 +132,12 @@ jobs:
           echo "FAL_KEY is present"
 
       - name: 10b Verify OpenAI secret for metadata
-        if: ${{ inputs.execution_mode == 'real' && (inputs.generate_metadata || inputs.publish_instagram) }}
+        if: ${{ inputs.execution_mode == 'real' }}
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           if [ -z "${OPENAI_API_KEY}" ]; then
-            echo "Missing required GitHub secret for metadata: OPENAI_API_KEY"
+            echo "Missing required GitHub secret for OpenAI features: OPENAI_API_KEY"
             exit 1
           fi
           echo "OPENAI_API_KEY is present"
@@ -177,8 +179,8 @@ jobs:
           fi
           echo "Instagram secrets are present"
 
-      - name: 10d Validate publish tokens
-        if: ${{ inputs.execution_mode == 'real' && (inputs.generate_metadata || inputs.publish_youtube || inputs.publish_instagram) }}
+      - name: 10d Validate API tokens
+        if: ${{ inputs.execution_mode == 'real' }}
         working-directory: code
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -188,9 +190,7 @@ jobs:
           INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
           INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
         run: |
-          if [ "${FASHIONBOT_GENERATE_METADATA}" = "true" ] || [ "${FASHIONBOT_PUBLISH_INSTAGRAM}" = "true" ]; then
-            python -m fashionbot.validate_secrets --openai
-          fi
+          python -m fashionbot.validate_secrets --openai
           if [ "${FASHIONBOT_PUBLISH_YOUTUBE}" = "true" ]; then
             python -m fashionbot.validate_secrets --youtube
           fi
@@ -227,6 +227,7 @@ jobs:
         working-directory: code
         env:
           FAL_KEY: ${{ secrets.FAL_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python -m fashionbot.run "${FASHIONBOT_JOB_ID}" --remote --remote-root "${FASHIONBOT_REMOTE_ROOT}"
 
