@@ -35,7 +35,7 @@
   },
   "intro_slide": {
     "enabled": false,
-    "auto_generate_background": true,
+    "auto_generate_background": false,
     "title": "One Outfit",
     "subtitle": "Styled across different bodies",
     "style_notes": [

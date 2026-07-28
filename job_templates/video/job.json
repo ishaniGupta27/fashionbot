@@ -44,7 +44,7 @@
   },
   "intro_slide": {
     "enabled": false,
-    "auto_generate_background": true,
+    "auto_generate_background": false,
     "title": "Fashion Try-On",
     "subtitle": "A soft editorial outfit moment",
     "style_notes": [

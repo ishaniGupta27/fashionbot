@@ -15,7 +15,12 @@ from .settings import (
 from .status import utc_now
 
 
+# Metadata text generation. Gemini is the default provider (cheaper / free tier);
+# OpenAI stays available as an explicit opt-in via metadata.provider = "openai".
+DEFAULT_LLM_PROVIDER = "gemini"
+DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
 DEFAULT_OPENAI_MODEL = "gpt-5-mini"
+VALID_LLM_PROVIDERS = ("gemini", "openai")
 OUTPUT_FILE = "youtube_metadata.json"
 MAX_TITLE_LENGTH = 100
 MAX_TAGS_LENGTH = 500
@@ -200,6 +205,68 @@ def call_openai(context, model, api_key):
     return parse_json_text(text, label="OpenAI metadata")
 
 
+def call_gemini(context, model, api_key):
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(
+        model=model,
+        contents=(
+            "Create metadata from this job context:\n"
+            + json.dumps(context, indent=2)
+        ),
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            response_mime_type="application/json",
+        ),
+    )
+    text = getattr(response, "text", None)
+    if not text:
+        raise FashionbotError("Gemini metadata response did not contain text")
+    return parse_json_text(text, label="Gemini metadata")
+
+
+def resolve_llm(job, model_override=None):
+    job_metadata = job.config.get("metadata", {})
+    if not isinstance(job_metadata, dict):
+        job_metadata = {}
+
+    provider = str(job_metadata.get("provider") or DEFAULT_LLM_PROVIDER).lower()
+    if provider not in VALID_LLM_PROVIDERS:
+        raise FashionbotError(
+            f"metadata.provider must be one of: {', '.join(VALID_LLM_PROVIDERS)}"
+        )
+
+    if provider == "gemini":
+        model = (
+            model_override
+            or secret_value("GEMINI_MODEL")
+            or job_metadata.get("gemini_model")
+            or DEFAULT_GEMINI_MODEL
+        )
+    else:
+        model = (
+            model_override
+            or secret_value("OPENAI_MODEL")
+            or job_metadata.get("model")
+            or DEFAULT_OPENAI_MODEL
+        )
+
+    return provider, model
+
+
+def call_llm(context, provider, model):
+    if provider == "gemini":
+        api_key = secret_value("GEMINI_API_KEY") or secret_value("GOOGLE_API_KEY")
+        if not api_key:
+            raise FashionbotError("GEMINI_API_KEY is not set")
+        return call_gemini(context, model, api_key)
+
+    api_key = secret_value("OPENAI_API_KEY", required=True)
+    return call_openai(context, model, api_key)
+
+
 def generate_metadata(job, model=None, force=False):
     output_path = metadata_path(job)
     if output_path.is_file() and not force:
@@ -225,27 +292,26 @@ def generate_metadata(job, model=None, force=False):
             "instagram.enabled to generate metadata"
         )
 
-    api_key = secret_value("OPENAI_API_KEY", required=True)
-    active_model = model or secret_value("OPENAI_MODEL") or DEFAULT_OPENAI_MODEL
+    provider, active_model = resolve_llm(job, model)
     context = metadata_context(job)
 
-    print("Generating YouTube Shorts metadata with OpenAI")
-    print(f"OpenAI model: {active_model}")
+    print(f"Generating YouTube Shorts metadata with {provider}")
+    print(f"{provider} model: {active_model}")
     print(f"Job theme: {context['theme'] or '(not provided)'}")
     print(f"Garments: {len(context['garment_names'])}")
 
     try:
-        generated = validate_metadata(call_openai(context, active_model, api_key))
+        generated = validate_metadata(call_llm(context, provider, active_model))
     except FashionbotError as first_error:
         retry_context = dict(context)
         retry_context["previous_error"] = str(first_error)
         print("Metadata validation failed once; retrying with validation feedback")
-        generated = validate_metadata(call_openai(retry_context, active_model, api_key))
+        generated = validate_metadata(call_llm(retry_context, provider, active_model))
 
     payload = {
         **generated,
         "generated_at": utc_now(),
-        "source": "openai",
+        "source": provider,
         "model": active_model,
     }
 
@@ -276,7 +342,11 @@ def main(argv=None):
         default=None,
         help="Override FASHIONBOT_ARCHETYPE_METADATA_DIR",
     )
-    parser.add_argument("--model", default=None, help="Override OPENAI_MODEL")
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="Override the provider model (GEMINI_MODEL / OPENAI_MODEL)",
+    )
     parser.add_argument("--force", action="store_true", help="Regenerate metadata")
 
     args = parser.parse_args(argv)

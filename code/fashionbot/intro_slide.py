@@ -315,7 +315,7 @@ def generate_intro_slide(job, dry_run=False):
     if not intro.get("enabled", False):
         return None
 
-    use_openai = not dry_run and intro.get("auto_generate_background", True)
+    use_openai = not dry_run and intro.get("auto_generate_background", False)
     if use_openai:
         try:
             spec = call_openai_for_spec(job)

@@ -21,7 +21,7 @@ on:
           - dry_run
           - real
       generate_metadata:
-        description: "Generate YouTube Shorts metadata with OpenAI"
+        description: "Generate YouTube Shorts metadata with Gemini"
         required: true
         default: false
         type: boolean
@@ -131,16 +131,16 @@ jobs:
           fi
           echo "FAL_KEY is present"
 
-      - name: 10b Verify OpenAI secret for metadata
+      - name: 10b Verify Gemini secret for metadata
         if: ${{ inputs.execution_mode == 'real' }}
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          if [ -z "${OPENAI_API_KEY}" ]; then
-            echo "Missing required GitHub secret for OpenAI features: OPENAI_API_KEY"
+          if [ -z "${GEMINI_API_KEY}" ]; then
+            echo "Missing required GitHub secret for metadata features: GEMINI_API_KEY"
             exit 1
           fi
-          echo "OPENAI_API_KEY is present"
+          echo "GEMINI_API_KEY is present"
 
       - name: 10c Verify YouTube secrets for publish
         if: ${{ inputs.execution_mode == 'real' && inputs.publish_youtube }}
@@ -183,14 +183,14 @@ jobs:
         if: ${{ inputs.execution_mode == 'real' }}
         working-directory: code
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
           INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
         run: |
-          python -m fashionbot.validate_secrets --openai
+          python -m fashionbot.validate_secrets --gemini
           if [ "${FASHIONBOT_PUBLISH_YOUTUBE}" = "true" ]; then
             python -m fashionbot.validate_secrets --youtube
           fi
@@ -227,7 +227,7 @@ jobs:
         working-directory: code
         env:
           FAL_KEY: ${{ secrets.FAL_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python -m fashionbot.run "${FASHIONBOT_JOB_ID}" --remote --remote-root "${FASHIONBOT_REMOTE_ROOT}"
 
@@ -235,7 +235,7 @@ jobs:
         if: ${{ inputs.execution_mode == 'real' && (inputs.generate_metadata || inputs.publish_instagram) }}
         working-directory: code
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python -m fashionbot.metadata "${FASHIONBOT_JOB_ID}"
 

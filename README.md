@@ -215,7 +215,7 @@ Required GitHub repository secrets:
 ```text
 RCLONE_CONFIG
 FAL_KEY
-OPENAI_API_KEY
+GEMINI_API_KEY
 YOUTUBE_CLIENT_ID
 YOUTUBE_CLIENT_SECRET
 YOUTUBE_REFRESH_TOKEN
@@ -238,7 +238,7 @@ install Python dependencies
 verify Fashionbot imports
 write rclone config from secret
 verify FAL_KEY for real runs
-verify OPENAI_API_KEY when metadata is enabled
+verify GEMINI_API_KEY when metadata is enabled
 verify YouTube secrets when publish is enabled
 check remote root/assets/archetypes/job
 run Fashionbot remote dry-run or real job
@@ -273,6 +273,8 @@ to the environment variable with the same name.
 {
   "FAL_KEY": "",
   "RCLONE_CONFIG": "",
+  "GEMINI_API_KEY": "",
+  "GEMINI_MODEL": "gemini-3.6-flash",
   "OPENAI_API_KEY": "",
   "YOUTUBE_CLIENT_ID": "",
   "YOUTUBE_CLIENT_SECRET": "",
@@ -324,7 +326,7 @@ venv/bin/python -m fashionbot.publish 69
 Validate tokens before publishing:
 
 ```bash
-venv/bin/python -m fashionbot.validate_secrets --openai
+venv/bin/python -m fashionbot.validate_secrets --gemini
 venv/bin/python -m fashionbot.validate_secrets --youtube
 ```
 
@@ -401,9 +403,14 @@ jobs/<job_id>/outputs/intro_slide.jpg
 jobs/<job_id>/outputs/intro_slide_spec.json
 ```
 
-`intro_slide.auto_generate_background: true` uses OpenAI to create the color and
-background design spec. In dry-run mode, Fashionbot uses a local fallback spec
-instead of calling OpenAI.
+Metadata text is generated with Gemini by default (`GEMINI_API_KEY`). To use
+OpenAI instead, set `metadata.provider: "openai"` in `job.json` and provide
+`OPENAI_API_KEY`.
+
+`intro_slide.auto_generate_background` defaults to `false`, so the original
+photo is used as the intro and no LLM is called. Set it to `true` (opt-in) to
+use OpenAI to create the color/background design spec; in dry-run mode a local
+fallback spec is always used instead of calling OpenAI.
 
 ## Submit Tool
 

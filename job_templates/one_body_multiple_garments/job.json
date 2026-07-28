@@ -39,7 +39,7 @@
   },
   "intro_slide": {
     "enabled": false,
-    "auto_generate_background": true,
+    "auto_generate_background": false,
     "title": "Date Night Looks",
     "subtitle": "Reimagined for every body",
     "style_notes": [

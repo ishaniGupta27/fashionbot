@@ -26,6 +26,26 @@ def require_present(name):
     return value
 
 
+def validate_gemini():
+    from google import genai
+
+    api_key = secret_value("GEMINI_API_KEY") or secret_value("GOOGLE_API_KEY")
+    if not api_key:
+        raise FashionbotError(
+            "Missing GEMINI_API_KEY. Add it to secrets/fashionbot.secrets.json "
+            "or set env var GEMINI_API_KEY."
+        )
+    print(f"OK GEMINI_API_KEY: {masked(api_key)}")
+
+    model = secret_value("GEMINI_MODEL") or "gemini-3.6-flash"
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(model=model, contents="Return exactly: ok")
+    text = (getattr(response, "text", "") or "").strip()
+    if not text:
+        raise FashionbotError("Gemini validation returned no text")
+    print(f"OK GEMINI_API_KEY validated with Gemini ({model})")
+
+
 def validate_openai():
     import requests
 
@@ -131,8 +151,9 @@ def main(argv=None):
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Validate OpenAI, YouTube, Instagram, fal.ai presence, and rclone.",
+        help="Validate Gemini, OpenAI, YouTube, Instagram, fal.ai presence, and rclone.",
     )
+    parser.add_argument("--gemini", action="store_true", help="Validate GEMINI_API_KEY")
     parser.add_argument("--openai", action="store_true", help="Validate OPENAI_API_KEY")
     parser.add_argument(
         "--youtube",
@@ -157,11 +178,15 @@ def main(argv=None):
     )
 
     args = parser.parse_args(argv)
-    if not any([args.all, args.openai, args.youtube, args.instagram, args.fal, args.rclone]):
-        args.openai = True
+    if not any(
+        [args.all, args.gemini, args.openai, args.youtube, args.instagram, args.fal, args.rclone]
+    ):
+        args.gemini = True
         args.youtube = True
 
     try:
+        if args.all or args.gemini:
+            validate_gemini()
         if args.all or args.openai:
             validate_openai()
         if args.all or args.youtube:
