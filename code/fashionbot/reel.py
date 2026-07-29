@@ -184,7 +184,7 @@ def render_labeled_image(
             text_blocks.append((wrap_text(draw, description, description_font, max_width), description_font, (255, 255, 255, 245)))
 
         if credit:
-            text_blocks.append((wrap_text(draw, f"Image credit: {credit}", credit_font, max_width), credit_font, (255, 255, 255, 230)))
+            text_blocks.append((wrap_text(draw, credit, credit_font, max_width), credit_font, (255, 255, 255, 230)))
 
         text_width = 0
         text_height = 0
